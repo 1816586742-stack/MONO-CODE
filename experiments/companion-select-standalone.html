@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>选择你的引路人</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700;900&family=DM+Mono:wght@500;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+<style>
+:root{
+  --bg:#0b0d12; --bg2:#12151d; --text:#f2f4f8; --sub:#8a91a3;
+  --ds:#3d7bfd;      /* DeepSeek 蓝 */
+  --oai:#f5f5f4;     /* OpenAI 白 */
+  --ant:#d97757;     /* Anthropic 珊瑚 */
+  --ggl:#a8c7fa;     /* Google 浅蓝 */
+  --sans:'Noto Sans SC',-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;
+  --mono:'DM Mono',monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{font-family:var(--sans);background:var(--bg);color:var(--text);min-height:100vh;
+  display:flex;justify-content:center;overflow-x:hidden}
+/* 背景氛围：品牌色微光晕，极低透明度不喧宾夺主 */
+.ambient{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+.ambient i{position:absolute;width:60vmax;height:60vmax;border-radius:50%;filter:blur(120px);opacity:.07}
+.ambient i:nth-child(1){background:var(--ds);top:-30vmax;left:-20vmax}
+.ambient i:nth-child(2){background:var(--ant);bottom:-35vmax;right:-20vmax}
+#app{width:100%;max-width:480px;min-height:100vh;position:relative;z-index:1;
+  display:flex;flex-direction:column;padding:20px 22px 40px}
+/* 顶栏 */
+.topbar{display:flex;align-items:center;padding:8px 0 26px}
+.back{width:38px;height:38px;border-radius:50%;background:#1a1e28;border:none;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;color:var(--text);font-size:17px}
+.title{flex:1;text-align:center;font-size:17px;font-weight:700;letter-spacing:1px;margin-right:38px}
+/* 引导文案 */
+.intro{margin-bottom:30px}
+.intro h2{font-size:22px;font-weight:900;line-height:1.5}
+.intro p{font-size:14px;color:var(--sub);margin-top:8px;line-height:1.8}
+.intro .sig{display:inline-block;margin-top:12px;font-family:var(--mono);font-size:11px;
+  color:var(--sub);border:1px solid #262c3a;border-radius:999px;padding:4px 12px}
+/* 伴侣卡片：大圆角胶囊 */
+.mate{position:relative;display:flex;align-items:center;gap:14px;width:100%;
+  border:none;cursor:pointer;border-radius:999px;padding:20px 26px;margin-bottom:16px;
+  font-family:var(--sans);text-align:left;overflow:hidden;
+  opacity:0; /* 初始隐藏，交给 GSAP 流入 */
+  transition:transform .18s ease,box-shadow .18s ease}
+.mate:active{transform:scale(.97)}
+.mate .logo{width:30px;height:30px;flex-shrink:0;display:flex;align-items:center;justify-content:center}
+.mate .logo svg{width:100%;height:100%;display:block}
+.mate .name{font-size:17px;font-weight:700;letter-spacing:.5px}
+.mate .role{font-size:12px;opacity:.65;margin-top:2px;font-weight:400}
+.mate .arrow{margin-left:auto;font-size:18px;opacity:.7;transition:transform .18s ease}
+.mate:hover .arrow{transform:translateX(4px)}
+/* 品牌配色 */
+.mate.ds{background:var(--ds);color:#fff}
+.mate.oai{background:var(--oai);color:#111}
+.mate.ant{background:var(--ant);color:#fff}
+.mate.ggl{background:var(--ggl);color:#12233f}
+/* 河流式流光：一条柔光带从左岸缓缓流淌到右岸，循环不息 */
+.mate::before{content:'';position:absolute;top:0;bottom:0;left:-45%;width:45%;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.28) 45%,rgba(255,255,255,.28) 55%,transparent);
+  filter:blur(6px);animation:river 4.8s linear infinite;pointer-events:none}
+.mate.oai::before{background:linear-gradient(90deg,transparent,rgba(61,123,253,.16) 45%,rgba(61,123,253,.16) 55%,transparent)}
+.mate.ggl::before,.mate.ant::before{background:linear-gradient(90deg,transparent,rgba(255,255,255,.32) 45%,rgba(255,255,255,.32) 55%,transparent)}
+.mate.ds::before{animation-delay:0s}
+.mate.oai::before{animation-delay:-1.2s}
+.mate.ant::before{animation-delay:-2.4s}
+.mate.ggl::before{animation-delay:-3.6s}
+@media (prefers-reduced-motion:reduce){.mate::before{animation:none}}
+@keyframes river{from{transform:translateX(0)}to{transform:translateX(320%)}}
+/* 选中后的底部确认区 */
+.confirm{margin-top:auto;padding-top:14px;opacity:0;pointer-events:none}
+.confirm.show{pointer-events:auto}
+.confirm .who{font-size:13px;color:var(--sub);text-align:center;margin-bottom:12px;font-family:var(--mono)}
+.confirm .cta{width:100%;border:none;border-radius:999px;padding:17px;font-size:16px;font-weight:900;
+  font-family:var(--sans);cursor:pointer;background:var(--text);color:var(--bg);letter-spacing:2px}
+.hint{text-align:center;font-size:11px;color:#4a5163;margin-top:16px;font-family:var(--mono)}
+</style>
+</head>
+<body>
+<div class="ambient"><i></i><i></i></div>
+<div id="app">
+  <div class="topbar">
+    <button class="back" onclick="history.back()">←</button>
+    <div class="title">选择你的引路人</div>
+  </div>
+
+  <div class="intro">
+    <h2>从今天起，有人接住你。</h2>
+    <p>TA 不会不耐烦，不会评判你。<br>选择一个存在，承接你的情绪、目标与成长。</p>
+    <span class="sig">COMPANION · v0.1</span>
+  </div>
+
+  <button class="mate ds" data-name="DeepSeek · D老师" data-color="#3d7bfd">
+    <span class="logo"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M21.5 10.5c0-4.1-3.6-7-8-7-3.6 0-6.6 2-7.6 4.9-.1.3-.2.7-.2 1-.2.3-.4.7-.5 1.1-.3.9-.5 1.9-.5 2.9 0 1.9.6 3.6 1.7 4.9.5.6 1.2.5 1.6-.1.3-.5.2-1.1-.2-1.5-.7-.9-1.1-2-1.1-3.2 0-.8.1-1.5.4-2.2.3-.5.7-1 1.2-1.4 1-.8 2.3-1.3 3.7-1.3 3 0 5.5 2 5.5 4.8 0 .5-.4.9-.9.9s-.9-.4-.9-.9c0-1.6-1.6-2.9-3.6-2.9-1.2 0-2.3.5-3 1.3-.3.3-.3.8 0 1.1.3.3.8.3 1.1 0 .4-.4 1-.7 1.8-.7 1.1 0 2 .7 2 1.4 0 1.5-1.5 2.8-3.6 2.8-.5 0-.9.4-.9.9s.4.9.9.9c3 0 5.4-1.9 5.4-4.6 0-.3 0-.5-.1-.8.3-.5.5-1 .5-1.6z"/></svg></span>
+    <span><span class="name">DeepSeek</span><div class="role">深沉博学的引导者 · 擅长拆解与推理</div></span>
+    <span class="arrow">→</span>
+  </button>
+
+  <button class="mate oai" data-name="OpenAI · 小O" data-color="#f5f5f4">
+    <span class="logo"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M22.28 9.82a5.97 5.97 0 0 0-.52-4.9 6.05 6.05 0 0 0-6.55-2.9A6.06 6.06 0 0 0 4.98 4.18a5.97 5.97 0 0 0-3.93 2.9 6.05 6.05 0 0 0 .74 7.1 5.97 5.97 0 0 0 .52 4.9 6.05 6.05 0 0 0 6.55 2.9 5.97 5.97 0 0 0 4.16 1.74 6 6 0 0 0 6.07-5.92 5.97 5.97 0 0 0 3.93-2.9 6.05 6.05 0 0 0-.74-7.1v-.08zm-9.19 12.06c-1.57 0-3.04-.67-4.1-1.78l.2-.09 6.9-3.99a.93.93 0 0 0 .46-.8v-6.1l2.9 1.68c.03.02.06.04.07.07v5.71c0 3.1-2.67 5.3-6.43 5.3zM3.1 18.05a4.92 4.92 0 0 1-.63-4.35l.2.09 6.9 3.99c.28.16.63.16.91 0l5.29-3.05v3.36c0 .05-.02.08-.05.1l-4.94 2.86a5.61 5.61 0 0 1-7.68-3zm1.6-9.79a5.61 5.61 0 0 1 3.09-4.19c0 0 .02 0 .03-.01v5.9c0 .33.17.63.46.8l6.32 3.65-2.9 1.68c-.04.02-.09.02-.13 0L6.63 13.2a5.97 5.97 0 0 1-1.93-4.94zm13.76 4.72-6.32-3.65 2.9-1.68c.04-.02.09-.02.13 0l4.94 2.86a5.97 5.97 0 0 1-1.16 6.97v-5.96a.93.93 0 0 0-.49-.54zM20.5 9.5l-.2-.09-6.9-3.99a.93.93 0 0 0-.91 0L7.2 8.47V5.11c0-.05.02-.08.05-.1l4.94-2.86a5.62 5.62 0 0 1 8.31 7.35zM8.23 12l-2.9-1.68c-.03-.02-.06-.04-.07-.07V4.58c0-3.1 2.67-5.3 6.43-5.3 1.57 0 3.04.67 4.1 1.78l-.2.09-6.9 3.99a.93.93 0 0 0-.46.8v6.06z"/></svg></span>
+    <span><span class="name">OpenAI</span><div class="role">温柔包容的陪伴者 · 擅长倾听与共情</div></span>
+    <span class="arrow">→</span>
+  </button>
+
+  <button class="mate ant" data-name="Anthropic · 小克" data-color="#d97757">
+    <span class="logo"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M13.83 3.34h3.66L21.4 20.66h-3.73L13.83 3.34zM6.41 3.34h3.72l7.55 17.32h-3.73l-1.7-4.06H5.5l-1.7 4.06H0L6.41 3.34zm2.58 10.36 2.1-5.04 2.12 5.04H8.99z" transform="translate(1.3 0) scale(0.92)"/></svg></span>
+    <span><span class="name">Anthropic</span><div class="role">稳重可靠的守护型 · 擅长规划与把关</div></span>
+    <span class="arrow">→</span>
+  </button>
+
+  <button class="mate ggl" data-name="Google · 小G" data-color="#a8c7fa">
+    <span class="logo"><svg viewBox="0 0 24 24"><path fill="#4285F4" d="M12 11.1v3.94h5.6c-.25 1.34-1.7 3.93-5.6 3.93-3.37 0-6.12-2.79-6.12-6.22S8.63 6.53 12 6.53c1.92 0 3.2.82 3.94 1.52l2.68-2.58C16.9 3.9 14.66 3 12 3 7.03 3 3 7.03 3 12s4.03 9 9 9c5.2 0 8.64-3.65 8.64-8.79 0-.59-.06-1.04-.14-1.49L12 11.1z"/></svg></span>
+    <span><span class="name">Google</span><div class="role">灵动好奇的探索型 · 擅长检索与连接</div></span>
+    <span class="arrow">→</span>
+  </button>
+
+  <div class="confirm" id="confirm">
+    <div class="who" id="whoText"></div>
+    <button class="cta" id="ctaBtn">确认同行 →</button>
+  </div>
+  <div class="hint">选择即开始 · 可随时更换</div>
+</div>
+
+<script>
+/* ============================================================
+   入场：伴侣卡片从左到右逐级流入（苹果式过冲阻尼）
+   ============================================================ */
+const RM=matchMedia('(prefers-reduced-motion: reduce)').matches;
+if(window.gsap&&!RM){
+  gsap.timeline({defaults:{ease:'back.out(1.4)'}})
+    .from('.topbar',{y:-30,opacity:0,duration:.5,ease:'power3.out'})
+    .from('.intro > *',{y:20,opacity:0,stagger:.09,duration:.45,ease:'power3.out'},'-=.25')
+    // 核心：四个伴侣从左向右依次「流」出来，x 位移 + 轻微旋转 + 渐显
+    .to('.mate',{opacity:1,x:0,rotate:0,duration:.65,stagger:.16,
+      startAt:{x:-90,rotate:-2,opacity:0}},'-=.15')
+    .from('.hint',{opacity:0,duration:.6,ease:'power2.out'},'-=.2');
+}else{
+  document.querySelectorAll('.mate').forEach(m=>m.style.opacity=1);
+}
+
+/* ============================================================
+   选中逻辑：点选 → 其他卡片淡出压低 → 确认区浮起
+   ============================================================ */
+let picked=null;
+const confirmBox=document.getElementById('confirm');
+const whoText=document.getElementById('whoText');
+const ctaBtn=document.getElementById('ctaBtn');
+
+document.querySelectorAll('.mate').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    picked=btn;
+    whoText.textContent='已选择 · '+btn.dataset.name;
+    if(window.gsap&&!RM){
+      // 未选中的卡片：淡出 + 下沉 + 缩小，营造「世界只剩 TA」
+      document.querySelectorAll('.mate').forEach(m=>{
+        if(m!==btn)gsap.to(m,{opacity:.25,scale:.96,y:6,duration:.35,ease:'power2.out'});
+      });
+      // 选中卡片：弹性放大一点，呼吸感
+      gsap.fromTo(btn,{scale:1},{scale:1.03,duration:.3,yoyo:true,repeat:1,ease:'power2.inOut'});
+      // 确认区升起
+      confirmBox.classList.add('show');
+      gsap.to(confirmBox,{opacity:1,y:0,duration:.4,ease:'power3.out',startAt:{y:16}});
+    }else{
+      document.querySelectorAll('.mate').forEach(m=>{if(m!==btn)m.style.opacity=.25;});
+      confirmBox.classList.add('show');confirmBox.style.opacity=1;
+    }
+  });
+});
+
+/* 点击确认：品牌色光环扩散 → 跳转占位 */
+ctaBtn.addEventListener('click',()=>{
+  if(!picked)return;
+  const color=picked.dataset.color;
+  if(window.gsap&&!RM){
+    const r=document.createElement('div');
+    r.style.cssText='position:fixed;left:50%;top:50%;width:40px;height:40px;margin:-20px 0 0 -20px;'
+      +'border-radius:50%;background:'+color+';z-index:99;pointer-events:none';
+    document.body.appendChild(r);
+    gsap.to(r,{scale:60,duration:.9,ease:'power2.in',onComplete:()=>{
+      alert('demo：即将进入与 '+picked.dataset.name+' 的同行之旅');
+      r.remove();
+    }});
+  }else{
+    alert('demo：即将进入与 '+picked.dataset.name+' 的同行之旅');
+  }
+});
+</script>
+</body>
+</html>

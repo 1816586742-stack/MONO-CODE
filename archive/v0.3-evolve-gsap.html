@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>⚡ 进化规划器 · GSAP Edition</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<!-- GSAP 3.14 核心 + Flip 插件（CDN 引入，零构建，自适应加载失败降级） -->
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/Flip.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@500;700&family=Noto+Sans+SC:wght@500;700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#fffaee; --card:#ffffff; --text:#000000; --sub:#555555;
+  --red:#ff6b6b; --yellow:#ffd93d; --ok:#0a8a4a; --warn:#d97706;
+  --bd:#000000; --chip:#fff3d6;
+  --sh:4px 4px 0 #000; --sh2:3px 3px 0 #000;
+  --mono:'DM Mono',monospace;
+  --sans:'Noto Sans SC',-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{font-family:var(--sans);
+  background:var(--bg);color:var(--text);min-height:100vh;display:flex;justify-content:center}
+#app{width:100%;max-width:520px;min-height:100vh;background:var(--bg);display:flex;flex-direction:column;position:relative}
+header{padding:18px 20px 12px;display:flex;align-items:center;justify-content:space-between}
+header h1{font-size:20px;font-weight:800;color:#000;box-shadow:inset 0 -9px 0 var(--yellow);display:inline-block;line-height:1.1}
+.lvl-pill{background:var(--yellow);border:2px solid var(--bd);border-radius:999px;
+  padding:4px 12px;font-size:12px;color:#000;box-shadow:var(--sh2);font-family:var(--mono);font-weight:700}
+.lvl-pill b{color:#000}
+main{flex:1;overflow-y:auto;padding:0 16px 90px}
+.page{display:none}
+.page.active{display:block}
+/* 原 CSS fade 动画已由 GSAP timeline 接管，避免双重动画冲突 */
+.card{background:var(--card);border:3px solid var(--bd);border-radius:0;
+  padding:16px;margin-bottom:14px;box-shadow:var(--sh)}
+.card h3{font-size:14px;font-weight:800;margin-bottom:10px;display:flex;align-items:center;gap:6px}
+textarea,input[type=text],input[type=password]{width:100%;border:2px solid var(--bd);
+  border-radius:0;padding:10px 12px;font-size:14px;font-family:inherit;background:#fff;
+  color:var(--text);resize:vertical;outline:none;transition:box-shadow .15s}
+textarea:focus,input:focus{box-shadow:var(--sh2)}
+textarea{min-height:90px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:3px solid var(--bd);cursor:pointer;
+  border-radius:0;padding:12px 18px;font-size:14px;font-weight:800;transition:all .15s cubic-bezier(.34,1.56,.64,1)}
+.btn:active{transform:translate(3px,3px);box-shadow:1px 1px 0 #000}
+.btn-primary{background:var(--red);color:#000;width:100%;margin-top:12px;box-shadow:var(--sh)}
+.btn-primary:hover{box-shadow:6px 6px 0 #000;transform:translate(-2px,-2px)}
+.btn-primary:disabled{opacity:.5;cursor:not-allowed}
+.btn-ghost{background:#fff;color:#000;font-size:13px;padding:8px 14px;border-width:2px;box-shadow:var(--sh2)}
+.btn-danger{background:var(--yellow);color:#000;font-size:12px;padding:6px 12px;border-width:2px;box-shadow:var(--sh2)}
+details{margin-top:12px}
+summary{cursor:pointer;font-size:13px;color:var(--sub);user-select:none;padding:6px 0;font-family:var(--mono)}
+.cfg-grid{display:grid;gap:8px;margin-top:8px}
+.cfg-grid label{font-size:12px;color:var(--sub)}
+.hint{font-size:12px;color:var(--sub);margin-top:8px;line-height:1.6}
+/* 任务 */
+.stage-tag{display:inline-block;font-size:11px;background:var(--yellow);border:2px solid var(--bd);
+  color:#000;border-radius:0;padding:2px 8px;margin-bottom:8px;font-family:var(--mono);font-weight:700;box-shadow:var(--sh2)}
+.task{display:flex;gap:10px;padding:12px;border:2px solid var(--bd);border-radius:0;
+  margin-bottom:8px;background:#fff;transition:all .2s;position:relative;overflow:hidden}
+.task:nth-of-type(odd){background:var(--chip)}
+.task.done{opacity:.6;background:#eee}
+.task.done .t-title{text-decoration:line-through}
+.task input[type=checkbox]{appearance:none;-webkit-appearance:none;width:20px;height:20px;margin-top:2px;
+  border:2px solid var(--bd);background:#fff;cursor:pointer;flex-shrink:0;border-radius:0;position:relative}
+.task input[type=checkbox]:checked{background:var(--red)}
+.task input[type=checkbox]:checked::after{content:'✓';position:absolute;inset:0;display:flex;
+  align-items:center;justify-content:center;color:#000;font-size:13px;font-weight:800}
+.t-title{font-size:14px;font-weight:600;line-height:1.4}
+.t-meta{font-size:12px;color:var(--sub);margin-top:4px;font-family:var(--mono)}
+.t-verify{font-size:12px;color:var(--ok);margin-top:4px;font-weight:600}
+.t-exp{margin-left:auto;flex-shrink:0;font-size:12px;font-weight:700;color:var(--red);align-self:center;font-family:var(--mono)}
+.risks{background:#ffe3e3;border:2px solid var(--bd);border-radius:0;padding:10px 12px;
+  font-size:12px;color:#a02020;margin-bottom:10px;line-height:1.7;box-shadow:var(--sh2)}
+.rate{display:flex;align-items:center;gap:8px;font-size:13px;margin-bottom:10px;font-family:var(--mono)}
+.rate b{color:var(--red)}
+/* 进化 */
+.hero{text-align:center;padding:26px 16px;position:relative}
+.hero .avatar{font-size:56px;animation:float 3s ease-in-out infinite;position:relative;z-index:1;
+  filter:drop-shadow(0 4px 0 rgba(0,0,0,.15))}
+@media (prefers-reduced-motion:reduce){.hero .avatar,.hero .avatar-ring{animation:none}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+/* 头像呼吸光环：产品级「灵魂感」 */
+.avatar-wrap{position:relative;display:inline-block}
+.avatar-ring{position:absolute;left:50%;top:50%;width:88px;height:88px;margin:-44px 0 0 -44px;
+  border:3px solid var(--yellow);border-radius:50%;z-index:0;
+  animation:ringPulse 2.4s ease-out infinite;pointer-events:none}
+@keyframes ringPulse{0%{transform:scale(.75);opacity:.9}70%{transform:scale(1.15);opacity:0}100%{transform:scale(1.15);opacity:0}}
+.hero .job{font-size:19px;font-weight:900;margin-top:8px;color:var(--red);-webkit-text-stroke:1px #000;letter-spacing:1px}
+.hero .lv{font-size:13px;color:var(--sub);margin-top:4px;font-family:var(--mono)}
+/* 动态经验条：斜纹流动 + 流光扫过 */
+.expbar{height:16px;background:#fff;border:2px solid var(--bd);border-radius:999px;overflow:hidden;margin:16px 4px 6px;position:relative}
+.expbar>i{display:block;height:100%;border-radius:999px;position:relative;overflow:hidden;
+  background:repeating-linear-gradient(45deg,var(--red) 0 10px,var(--yellow) 10px 20px);
+  background-size:28px 28px;animation:stripeFlow 1.2s linear infinite;
+  transition:width .6s cubic-bezier(.2,.8,.2,1)}
+.expbar>i::after{content:'';position:absolute;inset:0;
+  background:linear-gradient(105deg,transparent 30%,rgba(255,255,255,.75) 50%,transparent 70%);
+  background-size:200% 100%;animation:sheen 2.2s ease-in-out infinite}
+@media (prefers-reduced-motion:reduce){.expbar>i,.expbar>i::after{animation:none}}
+@keyframes stripeFlow{to{background-position:28px 0}}
+@keyframes sheen{0%{background-position:200% 0}100%{background-position:-100% 0}}
+.expnum{text-align:center;font-size:12px;color:var(--sub);font-family:var(--mono)}
+.stat-row{display:flex;gap:10px;margin-top:14px}
+.stat{flex:1;background:#fff;border:2px solid var(--bd);border-radius:0;padding:12px;text-align:center;box-shadow:var(--sh2)}
+.stat b{display:block;font-size:22px;font-weight:800;color:var(--red);font-family:var(--mono)}
+.stat span{font-size:11px;color:var(--sub)}
+.jobpath{margin-top:6px}
+.jobpath .jp{display:flex;align-items:center;gap:8px;font-size:13px;padding:8px 0;border-bottom:2px dashed var(--bd)}
+.jobpath .jp:last-child{border:none}
+.jp .dot{width:10px;height:10px;border-radius:50%;background:#fff;border:2px solid var(--bd);flex-shrink:0}
+.jp.cur .dot{background:var(--red);box-shadow:0 0 0 3px var(--yellow)}
+.jp.cur b{color:var(--red)}
+.jp.lock{opacity:.4}
+/* 记忆 */
+.mem{border:2px solid var(--bd);border-left:6px solid var(--red);padding:12px;background:#fff;
+  border-radius:0;margin-bottom:10px;box-shadow:var(--sh2)}
+.mem .m-goal{font-size:14px;font-weight:700}
+.mem .m-date{font-size:11px;color:var(--sub);margin:4px 0;font-family:var(--mono)}
+.mem .m-note{font-size:13px;color:var(--text);background:var(--chip);border:2px solid var(--bd);
+  border-radius:0;padding:8px 10px;margin-top:6px;line-height:1.6}
+.empty{text-align:center;color:var(--sub);font-size:13px;padding:40px 20px;line-height:2}
+/* 导航 */
+nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:520px;
+  background:#fff;border-top:3px solid var(--bd);display:flex;padding:6px 0 calc(6px + env(safe-area-inset-bottom));z-index:10}
+nav button{flex:1;border:none;background:none;cursor:pointer;font-size:11px;color:var(--sub);
+  display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 0;font-family:inherit}
+nav button .ico{font-size:20px;padding:2px 6px;border:2px solid transparent;border-radius:0}
+nav button.active{color:#000;font-weight:800}
+nav button.active .ico{background:var(--yellow);border-color:var(--bd)}
+/* 复盘弹窗 */
+.modal-mask{position:fixed;inset:0;background:rgba(0,0,0,.4);display:none;
+  align-items:flex-end;justify-content:center;z-index:50}
+.modal-mask.show{display:flex}
+.modal{background:#fff;width:100%;max-width:520px;border-radius:0;border:3px solid var(--bd);border-bottom:none;
+  box-shadow:6px 6px 0 #000;padding:20px;animation:up .3s ease}
+@keyframes up{from{transform:translateY(40px);opacity:0}to{transform:none;opacity:1}}
+.modal h3{font-size:16px;font-weight:800;margin-bottom:10px}
+canvas#fx{position:fixed;inset:0;pointer-events:none;z-index:99}
+.toast{position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#000;color:var(--yellow);
+  border:2px solid var(--yellow);font-size:13px;font-weight:700;padding:10px 18px;border-radius:0;
+  opacity:0;transition:opacity .3s;z-index:100;pointer-events:none;font-family:var(--mono)}
+.toast.show{opacity:.95}
+</style>
+</head>
+<body>
+<canvas id="fx"></canvas>
+<div class="toast" id="toast"></div>
+<div id="app">
+  <header>
+    <h1>⚡ 进化规划器</h1>
+    <div class="lvl-pill">Lv.<b id="hLv">1</b> <span id="hJob">新手</span></div>
+  </header>
+  <main>
+    <!-- 输入 -->
+    <section class="page active" id="p-input">
+      <div class="card">
+        <h3>💡 灵感输入</h3>
+        <textarea id="goalInput" placeholder="写下一个真实目标，越具体越好。&#10;例：给笔记本清灰 / 配好 Kali 虚拟机 / 部署一个 GitHub 项目"></textarea>
+        <button class="btn btn-primary" id="btnSplit" onclick="splitGoal()">⚡ 最小单元拆解</button>
+        <div class="hint">方法论：目标 → 拆为最小可执行步骤 → 动手落地 → 复盘巩固 → 沉淀复利</div>
+        <details>
+          <summary>⚙️ AI 接口配置（OpenAI 兼容，可选）</summary>
+          <div class="cfg-grid">
+            <label>接口地址<input type="text" id="cfgUrl" placeholder="https://api.openai.com/v1"></label>
+            <label>API Key<input type="password" id="cfgKey" placeholder="sk-..."></label>
+            <label>模型<input type="text" id="cfgModel" placeholder="gpt-4o-mini"></label>
+            <button class="btn btn-ghost" onclick="saveCfg()">保存配置</button>
+          </div>
+          <div class="hint">不配置则使用内置拆解模板。配置后由 AI 输出阶段、验证标准、风险预测与成功率。</div>
+        </details>
+      </div>
+      <div id="inputResult"></div>
+    </section>
+
+    <!-- 今天 -->
+    <section class="page" id="p-today">
+      <div id="todayBox"></div>
+    </section>
+
+    <!-- 进化 -->
+    <section class="page" id="p-evolve">
+      <div class="card hero">
+        <div class="avatar-wrap"><div class="avatar-ring"></div><div class="avatar" id="eAvatar">🌱</div></div>
+        <div class="job" id="eJob">新手</div>
+        <div class="lv">Level <span id="eLv">1</span></div>
+        <div class="expbar"><i id="eBar" style="width:0%"></i></div>
+        <div class="expnum" id="eExp">0 / 100 EXP</div>
+        <div class="stat-row">
+          <div class="stat"><b id="sDone">0</b><span>完成任务</span></div>
+          <div class="stat"><b id="sGoal">0</b><span>归档目标</span></div>
+          <div class="stat"><b id="sExp">0</b><span>总EXP</span></div>
+        </div>
+      </div>
+      <div class="card">
+        <h3>🛤️ 转职路线</h3>
+        <div class="jobpath" id="jobPath"></div>
+      </div>
+    </section>
+
+    <!-- 记忆 -->
+    <section class="page" id="p-mem">
+      <div class="card" style="display:flex;justify-content:space-between;align-items:center">
+        <h3 style="margin:0">🧠 记忆库 · 复利沉淀</h3>
+        <button class="btn btn-danger" onclick="resetAll()">清空数据</button>
+      </div>
+      <div id="memBox"></div>
+    </section>
+  </main>
+
+  <nav>
+    <button class="active" data-p="p-input" onclick="go(this)"><span class="ico">💡</span>输入</button>
+    <button data-p="p-today" onclick="go(this)"><span class="ico">✅</span>今天</button>
+    <button data-p="p-evolve" onclick="go(this)"><span class="ico">🧬</span>进化</button>
+    <button data-p="p-mem" onclick="go(this)"><span class="ico">🧠</span>记忆</button>
+  </nav>
+</div>
+
+<!-- 复盘弹窗 -->
+<div class="modal-mask" id="reviewMask">
+  <div class="modal">
+    <h3>🎯 全部完成！复盘归档</h3>
+    <div class="hint" style="margin:0 0 10px">写下来：卡在哪？学到什么？下次怎么更快？——这是沉淀为预测模型的关键一步。</div>
+    <textarea id="reviewNote" placeholder="例：清灰时螺丝刀型号不对卡了10分钟，下次先核对工具清单"></textarea>
+    <button class="btn btn-primary" onclick="archiveGoal()">📦 归档入库（+50 EXP）</button>
+  </div>
+</div>
+
+<script>
+/* ============ 数据层 ============ */
+const KEY='evolve_v1';
+let S=load();
+function load(){
+  try{const d=JSON.parse(localStorage.getItem(KEY));if(d)return d;}catch(e){}
+  return {exp:0,doneTasks:0,goal:null,tasks:[],mem:[],cfg:{url:'',key:'',model:''}};
+}
+function save(){localStorage.setItem(KEY,JSON.stringify(S));}
+const JOBS=[[1,'新手','🌱'],[3,'践行者','🌿'],[5,'拆解师','⚔️'],[8,'进化者','🔥'],[12,'大师','👑']];
+function level(){let l=1,e=S.exp;while(e>=expNeed(l)){e-=expNeed(l);l++;}return l;}
+function expNeed(l){return 100+(l-1)*50;}
+function expInLevel(){let l=1,e=S.exp;while(e>=expNeed(l)){e-=expNeed(l);l++;}return e;}
+function job(){const l=level();let j=JOBS[0];for(const x of JOBS)if(l>=x[0])j=x;return j;}
+
+/* ============ 导航（GSAP 接管页面切换转场） ============ */
+function go(btn){
+  document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  const targetId=btn.dataset.p;
+  const cur=document.querySelector('.page.active');
+  const next=document.getElementById(targetId);
+  if(cur===next){render();return;}
+  // GSAP 可用时：旧页面淡出上飘 → 新页面淡入 + 播放入场动画
+  if(window.gsap&&cur){
+    gsap.to(cur,{opacity:0,y:-14,duration:.2,ease:'power2.in',onComplete:()=>{
+      cur.classList.remove('active');gsap.set(cur,{clearProps:'all'});
+      next.classList.add('active');
+      gsap.fromTo(next,{opacity:0,y:18},{opacity:1,y:0,duration:.32,ease:'power2.out',
+        onComplete:()=>gsap.set(next,{clearProps:'all'})});
+      render();
+      playEnter(targetId);
+    }});
+  }else{
+    document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+    next.classList.add('active');
+    render();
+    playEnter(targetId);
+  }
+}
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),1800);}
+
+/* ============ 拆解 ============ */
+function saveCfg(){
+  S.cfg={url:document.getElementById('cfgUrl').value.trim(),
+         key:document.getElementById('cfgKey').value.trim(),
+         model:document.getElementById('cfgModel').value.trim()};
+  save();toast('配置已保存');
+}
+const SPLIT_PROMPT=`你是任务拆解专家。把用户目标拆成最小可执行步骤（每步5-30分钟，今天就能动手）。
+严格只输出JSON，不要markdown代码块：
+{"successRate":75,"risks":["风险1","风险2"],"stages":[{"name":"阶段名","tasks":[{"title":"具体动作","verify":"可检验的完成标准","minutes":15}]}]}
+要求：2-4个阶段，总共4-10个任务，每个任务都必须今天可执行、有明确验证标准。`;
+
+async function splitGoal(){
+  const goal=document.getElementById('goalInput').value.trim();
+  if(!goal)return toast('先写一个目标');
+  const btn=document.getElementById('btnSplit');
+  btn.disabled=true;btn.textContent='⚙️ 拆解中...';
+  let data=null;
+  if(S.cfg.url&&S.cfg.key&&S.cfg.model){
+    try{
+      const r=await fetch(S.cfg.url.replace(/\/+$/,'')+'/chat/completions',{
+        method:'POST',
+        headers:{'Content-Type':'application/json','Authorization':'Bearer '+S.cfg.key},
+        body:JSON.stringify({model:S.cfg.model,temperature:0.7,
+          messages:[{role:'system',content:SPLIT_PROMPT},{role:'user',content:goal}]})
+      });
+      const j=await r.json();
+      let txt=j.choices[0].message.content.trim().replace(/^```(json)?|```$/g,'').trim();
+      data=JSON.parse(txt);
+    }catch(e){toast('AI 调用失败，已用内置模板');}
+  }
+  if(!data)data=localSplit(goal);
+  S.goal=goal;
+  S.tasks=[];let id=0;
+  for(const st of data.stages)for(const t of st.tasks)
+    S.tasks.push({id:++id,stage:st.name,title:t.title,verify:t.verify||'',minutes:t.minutes||15,done:false});
+  S.risks=data.risks||[];S.rate=data.successRate||null;
+  save();render();
+  btn.disabled=false;btn.textContent='⚡ 最小单元拆解';
+  renderInputResult();
+  toast('拆解完成，去「今天」打卡');
+}
+function localSplit(goal){
+  return {successRate:70,
+    risks:['目标过大导致迟迟不动手——先从第一步开始','环境/工具缺失——第一步先核对前置条件','中途被打断——每步控制在30分钟内'],
+    stages:[
+      {name:'准备',tasks:[
+        {title:'明确最终验收标准，一句话写下来',verify:'能向别人说清"做成什么样算完成"',minutes:5},
+        {title:'核对所需工具/环境/资料是否齐全',verify:'清单逐项打勾，缺的先补齐',minutes:10}]},
+      {name:'执行',tasks:[
+        {title:'完成「'+goal.slice(0,12)+'」的第一步最小动作',verify:'产生一个可见的中间结果',minutes:20},
+        {title:'推进主体工作，遇到卡点立即记录',verify:'核心部分完成，卡点已逐条记下',minutes:30},
+        {title:'收尾并自检验收标准',verify:'对照第1步的标准逐项确认',minutes:15}]},
+      {name:'沉淀',tasks:[
+        {title:'写3行复盘：卡在哪/学到什么/下次怎么更快',verify:'复盘文字不少于3行',minutes:10}]}]};
+}
+function renderInputResult(){
+  const box=document.getElementById('inputResult');
+  if(!S.goal){box.innerHTML='';return[];}
+  let h='<div class="card" data-anim><h3>🎯 当前目标</h3><div style="font-size:15px;font-weight:700">'+esc(S.goal)+'</div>';
+  if(S.rate)h+='<div class="rate" style="margin-top:8px">📈 预估成功率 <b>'+S.rate+'%</b></div>';
+  if(S.risks&&S.risks.length)h+='<div class="risks" style="margin-top:8px">⚠️ <b>风险预测</b><br>'+S.risks.map(r=>'· '+esc(r)).join('<br>')+'</div>';
+  h+='<button class="btn btn-ghost" style="margin-top:8px" onclick="go(document.querySelectorAll(\'nav button\')[1])">去「今天」打卡 →</button></div>';
+  box.innerHTML=h;
+  return Array.from(box.children);
+}
+
+/* ============ 今天 ============ */
+function renderToday(){
+  const box=document.getElementById('todayBox');
+  if(!S.goal||!S.tasks.length){
+    box.innerHTML='<div class="empty">今天还没有任务<br>先去「输入」页拆解一个目标 ⚡</div>';return Array.from(box.children);}
+  const doneN=S.tasks.filter(t=>t.done).length;
+  let h='<div class="card"><h3>🎯 '+esc(S.goal)+'</h3><div class="hint">'+doneN+' / '+S.tasks.length+' 已完成</div></div>';
+  if(S.risks&&S.risks.length)h+='<div class="risks">⚠️ <b>风险预测</b><br>'+S.risks.map(r=>'· '+esc(r)).join('<br>')+'</div>';
+  let lastStage='';
+  for(const t of S.tasks){
+    if(t.stage!==lastStage){h+='<div class="stage-tag">'+esc(t.stage)+'</div>';lastStage=t.stage;}
+    h+='<label class="task'+(t.done?' done':'')+'">'
+      +'<input type="checkbox" '+(t.done?'checked':'')+' onchange="checkTask('+t.id+',this)">'
+      +'<div><div class="t-title">'+esc(t.title)+'</div>'
+      +'<div class="t-meta">⏱ 约'+t.minutes+'分钟</div>'
+      +(t.verify?'<div class="t-verify">✓ 验证：'+esc(t.verify)+'</div>':'')
+      +'</div><div class="t-exp">+'+taskExp(t)+'</div></label>';
+  }
+  if(doneN===S.tasks.length&&S.tasks.length>0)
+    h+='<button class="btn btn-primary" onclick="openReview()">🎉 全部完成 · 复盘归档</button>';
+  box.innerHTML=h;
+  return Array.from(box.children);
+}
+function taskExp(t){return Math.max(10,Math.round(t.minutes));}
+function checkTask(id,el){
+  const t=S.tasks.find(x=>x.id===id);
+  t.done=el.checked;
+  if(t.done){
+    S.exp+=taskExp(t);S.doneTasks++;
+    const r=el.getBoundingClientRect();
+    burst(r.left+10,r.top+10);ding();popTask(el);
+    expFlyFx(r.left+10,r.top+10,'+'+taskExp(t)+' EXP');
+    const l0=level();save();
+    if(level()>l0){setTimeout(()=>{fanfare();burst(innerWidth/2,innerHeight/3,60);toast('🎉 升级！Lv.'+level()+' · '+job()[1]);},300);}
+  }else{S.exp-=taskExp(t);S.doneTasks--;}
+  save();renderHeader();renderToday();
+}
+/* EXP 飘分：勾选处浮出 +N EXP 飘向顶部等级 pill（GSAP 驱动，失败降级静默） */
+function expFlyFx(x,y,txt){
+  if(!window.gsap||RM)return;
+  const pill=document.querySelector('.lvl-pill');
+  const pr=pill?pill.getBoundingClientRect():{left:innerWidth/2,top:20};
+  const f=document.createElement('div');
+  f.textContent=txt;
+  f.style.cssText='position:fixed;left:'+x+'px;top:'+y+'px;z-index:120;pointer-events:none;'
+    +'font-family:var(--mono);font-weight:700;font-size:13px;color:#000;'
+    +'background:var(--yellow);border:2px solid #000;padding:2px 8px;box-shadow:2px 2px 0 #000';
+  document.body.appendChild(f);
+  gsap.timeline({onComplete:()=>f.remove()})
+    .to(f,{y:-26,duration:.35,ease:'power2.out'})
+    .to(f,{x:pr.left-x+pr.width/2,y:pr.top-y,scale:.6,duration:.55,ease:'power2.in'},'-=.05')
+    .to(f,{opacity:0,duration:.15},'-=.1')
+    .fromTo(pill,{scale:1},{scale:1.15,yoyo:true,repeat:1,duration:.15,ease:'power2.inOut'},'-=.3');
+}
+function openReview(){document.getElementById('reviewMask').classList.add('show');ding();}
+function archiveGoal(){
+  const note=document.getElementById('reviewNote').value.trim();
+  S.mem.unshift({goal:S.goal,date:new Date().toLocaleString('zh-CN'),
+    tasks:S.tasks.length,note:note||'（未写复盘）'});
+  S.exp+=50;S.goal=null;S.tasks=[];S.risks=[];S.rate=null;
+  document.getElementById('reviewNote').value='';
+  document.getElementById('reviewMask').classList.remove('show');
+  save();fanfare();burst(innerWidth/2,innerHeight/2,80);
+  toast('📦 已归档 +50 EXP');render();
+}
+document.getElementById('reviewMask').addEventListener('click',e=>{
+  if(e.target.id==='reviewMask')e.target.classList.remove('show');});
+
+/* ============ 进化/记忆 ============ */
+function renderEvolve(){
+  const l=level(),j=job();
+  document.getElementById('eAvatar').textContent=j[2];
+  document.getElementById('eJob').textContent=j[1];
+  document.getElementById('eLv').textContent=l;
+  const cur=expInLevel(),need=expNeed(l);
+  document.getElementById('eBar').style.width=Math.min(100,cur/need*100)+'%';
+  document.getElementById('eExp').textContent=cur+' / '+need+' EXP';
+  document.getElementById('sDone').textContent=S.doneTasks;
+  document.getElementById('sGoal').textContent=S.mem.length;
+  document.getElementById('sExp').textContent=S.exp;
+  document.getElementById('jobPath').innerHTML=JOBS.map(x=>{
+    const st=l>=x[0]?'cur':'lock';
+    return '<div class="jp '+st+'"><span class="dot"></span>'+x[2]+' <b>'+x[1]+'</b><span style="margin-left:auto;font-size:12px;color:var(--sub)">Lv.'+x[0]+(st==='cur'?' · 已达成':'')+'</span></div>';
+  }).join('');
+}
+function renderMem(){
+  const box=document.getElementById('memBox');
+  if(!S.mem.length){box.innerHTML='<div class="empty">记忆库还是空的<br>完成一个目标并复盘归档，开始复利 🧠</div>';return Array.from(box.children);}
+  box.innerHTML=S.mem.map(m=>'<div class="mem"><div class="m-goal">'+esc(m.goal)+'</div>'
+    +'<div class="m-date">'+m.date+' · '+m.tasks+'个任务</div>'
+    +'<div class="m-note">'+esc(m.note)+'</div></div>').join('');
+  return Array.from(box.children);
+}
+function resetAll(){
+  if(!confirm('确定清空所有数据？EXP、任务、记忆库都会丢失。'))return;
+  localStorage.removeItem(KEY);S=load();render();toast('已重置');
+}
+
+/* ============ 音效 & 粒子 ============ */
+let AC=null;
+function ac(){if(!AC)AC=new (window.AudioContext||window.webkitAudioContext)();return AC;}
+function tone(f,d,type='sine',v=.15,t=0){const c=ac(),o=c.createOscillator(),g=c.createGain();
+  o.type=type;o.frequency.value=f;g.gain.setValueAtTime(v,c.currentTime+t);
+  g.gain.exponentialRampToValueAtTime(.001,c.currentTime+t+d);
+  o.connect(g).connect(c.destination);o.start(c.currentTime+t);o.stop(c.currentTime+t+d);}
+function ding(){try{tone(880,.12);tone(1320,.18,'sine',.12,.08);}catch(e){}}
+function fanfare(){try{[523,659,784,1047].forEach((f,i)=>tone(f,.25,'triangle',.15,i*.1));}catch(e){}}
+const cvs=document.getElementById('fx'),ctx=cvs.getContext('2d');let parts=[];
+function resize(){cvs.width=innerWidth;cvs.height=innerHeight;}
+addEventListener('resize',resize);resize();
+function burst(x,y,n=24){
+  const colors=['#ff6b6b','#ffd93d','#000000','#ffffff','#ff9f43'];
+  for(let i=0;i<n;i++)parts.push({x,y,vx:(Math.random()-.5)*8,vy:(Math.random()-.5)*8-3,
+    life:1,c:colors[i%colors.length],r:Math.random()*4+2});
+}
+(function loop(){
+  ctx.clearRect(0,0,cvs.width,cvs.height);
+  parts=parts.filter(p=>p.life>0);
+  for(const p of parts){p.x+=p.vx;p.y+=p.vy;p.vy+=.25;p.life-=.02;
+    ctx.globalAlpha=p.life;ctx.fillStyle=p.c;
+    ctx.beginPath();ctx.arc(p.x,p.y,p.r*p.life,0,7);ctx.fill();}
+  ctx.globalAlpha=1;requestAnimationFrame(loop);
+})();
+
+/* ============ 渲染 ============ */
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function renderHeader(){const j=job();
+  document.getElementById('hLv').textContent=level();
+  document.getElementById('hJob').textContent=j[1];}
+function render(){renderHeader();renderInputResult();renderToday();renderEvolve();renderMem();
+  if(S.cfg.url)document.getElementById('cfgUrl').value=S.cfg.url;
+  if(S.cfg.key)document.getElementById('cfgKey').value=S.cfg.key;
+  if(S.cfg.model)document.getElementById('cfgModel').value=S.cfg.model;}
+
+/* ============================================================
+   GSAP 入场动效引擎
+   - 苹果式节奏：轻微过冲 + 弹性阻尼，stagger 级联，克制不喧哗
+   - 性能：仅用 transform/opacity（GPU 合成层），will-change 提示，
+     移动端缩短时长；prefers-reduced-motion 与 CDN 加载失败自动降级
+   ============================================================ */
+const G_OK=typeof window.gsap!=='undefined';
+if(G_OK&&window.Flip)gsap.registerPlugin(Flip);
+const MOBILE=matchMedia('(max-width:640px)').matches;
+const RM=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const D=MOBILE?0.75:1;               // 移动端整体时长压缩
+const EASE_MAIN='back.out(1.5)';      // 主缓动：带过冲的阻尼感
+const EASE_SOFT='power3.out';         // 柔和缓动：用于大面积元素
+
+/* 数字滚动：从 0 滚到目标值（用于统计卡片/EXP） */
+function countUp(el,to,dur=0.9){
+  if(!G_OK||RM){el.textContent=to;return;}
+  const o={v:0};
+  gsap.to(o,{v:to,duration:dur*D,ease:'power2.out',
+    onUpdate:()=>el.textContent=Math.round(o.v)});
+}
+
+/* 主页面（输入页）入场 */
+function enterInput(){
+  const tl=gsap.timeline({defaults:{ease:EASE_MAIN}});
+  tl.from('header h1',{y:-34,opacity:0,rotate:-4,duration:.55*D})
+    .from('.lvl-pill',{scale:0,opacity:0,duration:.45*D,ease:'back.out(2.2)'},'-=.3')
+    .from('#p-input > .card',{y:44,opacity:0,duration:.55*D,ease:EASE_SOFT},'-=.2')
+    .from('#p-input > .card > *',{y:16,opacity:0,stagger:.06,duration:.35*D,ease:EASE_SOFT},'-=.3');
+  // 已存在目标结果卡（数据驱动渲染的节点）
+  const res=renderInputResult();
+  if(res&&res.length)tl.from(res,{y:36,opacity:0,scale:.96,stagger:.1,duration:.5*D,ease:EASE_SOFT},'-=.15');
+}
+
+/* 行动页（今天）入场：任务列表 stagger 弹射 */
+function enterToday(){
+  const items=renderToday();
+  if(!items||!items.length)return;
+  gsap.from(items,{x:-40,opacity:0,scale:.97,stagger:.07,duration:.45*D,ease:EASE_MAIN,clearProps:'all'});
+}
+
+/* 个人中心（进化页）入场：头像弹跳 + 经验条充能 + 数字滚动 + 转职路线点亮 */
+function enterEvolve(){
+  const lv=level(),need=expNeed(lv),cur=expInLevel();
+  const pct=Math.min(100,cur/need*100);
+  const tl=gsap.timeline({defaults:{ease:EASE_MAIN}});
+  tl.from('#p-evolve .hero',{scale:.92,opacity:0,duration:.5*D,ease:EASE_SOFT})
+    .from('#eAvatar',{scale:0,rotate:-30,duration:.7*D,ease:'elastic.out(1,.45)'},'-=.25')
+    .from('#eJob',{y:14,opacity:0,duration:.35*D},'-=.4')
+    .from('.expbar',{scaleX:0,transformOrigin:'left center',duration:.4*D,ease:EASE_SOFT},'-=.2');
+  // 经验条充能（覆盖 CSS transition，避免双重动画）
+  const bar=document.getElementById('eBar');
+  bar.style.transition='none';bar.style.width='0%';
+  tl.to(bar,{width:pct+'%',duration:.9*D,ease:'power2.inOut',
+    onComplete:()=>{bar.style.transition='';}},'-=.1');
+  // 统计数字滚动
+  countUp(document.getElementById('sDone'),S.doneTasks);
+  countUp(document.getElementById('sGoal'),S.mem.length);
+  countUp(document.getElementById('sExp'),S.exp);
+  tl.from('.stat',{y:22,opacity:0,stagger:.09,duration:.4*D},'-=.7')
+    .from('#p-evolve .card:nth-of-type(2)',{y:36,opacity:0,duration:.45*D,ease:EASE_SOFT},'-=.2')
+    .from('.jobpath .jp',{x:-26,opacity:0,stagger:.08,duration:.35*D,clearProps:'all'},'-=.25');
+  // 已达成节点脉冲高亮
+  const curDot=document.querySelector('.jp.cur .dot');
+  if(curDot)tl.fromTo(curDot,{boxShadow:'0 0 0 0 rgba(255,217,61,.9)'},
+    {boxShadow:'0 0 0 10px rgba(255,217,61,0)',duration:.8,repeat:1,ease:'power2.out'},'-=.2');
+}
+
+/* 记忆页入场：卡片右侧滑入级联 */
+function enterMem(){
+  const items=renderMem();
+  if(!items||!items.length)return;
+  gsap.from(items,{x:44,opacity:0,rotate:1.5,stagger:.08,duration:.45*D,ease:EASE_MAIN,clearProps:'all'});
+}
+
+/* 入场动画路由器 */
+function playEnter(pageId){
+  if(!G_OK||RM)return;
+  switch(pageId){
+    case 'p-input': enterInput(); break;
+    case 'p-today': enterToday(); break;
+    case 'p-evolve': enterEvolve(); break;
+    case 'p-mem': enterMem(); break;
+  }
+}
+
+/* 任务勾选时的弹性反馈（GSAP 增强版，叠加在原粒子/音效之上） */
+function popTask(el){
+  if(!G_OK||RM)return;
+  gsap.fromTo(el.closest('.task'),{scale:1},
+    {scale:1.03,duration:.12,yoyo:true,repeat:1,ease:'power2.inOut',clearProps:'transform'});
+}
+
+/* ============ 启动序列 ============ */
+render();
+if(G_OK&&!RM){
+  enterInput();            // 首屏：主页面入场
+}else{
+  /* GSAP CDN 加载失败 / 用户偏好减少动态：静态渲染，功能完全不受影响 */
+}
+</script>
+</body>
+</html>

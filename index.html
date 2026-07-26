@@ -3,108 +3,89 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>⚡ 进化规划器 · GSAP Edition</title>
+<title>MONO CODE · 源进化 v1.0</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<!-- GSAP 3.14 核心 + Flip 插件（CDN 引入，零构建，自适应加载失败降级） -->
-<script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/Flip.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@500;700&family=Noto+Sans+SC:wght@500;700;900&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
 <style>
 :root{
   --bg:#fffaee; --card:#ffffff; --text:#000000; --sub:#555555;
-  --red:#ff6b6b; --yellow:#ffd93d; --ok:#0a8a4a; --warn:#d97706;
+  --red:#ff6b6b; --yellow:#ffd93d; --ok:#0a8a4a;
   --bd:#000000; --chip:#fff3d6;
   --sh:4px 4px 0 #000; --sh2:3px 3px 0 #000;
   --mono:'DM Mono',monospace;
-  --sans:'Noto Sans SC',-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;
+  --sans:'Noto Sans SC',-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;
 }
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-body{font-family:var(--sans);
-  background:var(--bg);color:var(--text);min-height:100vh;display:flex;justify-content:center}
-#app{width:100%;max-width:520px;min-height:100vh;background:var(--bg);display:flex;flex-direction:column;position:relative}
+body{font-family:var(--sans);background:var(--bg);color:var(--text);min-height:100vh;display:flex;justify-content:center}
+#app{width:100%;max-width:520px;min-height:100vh;display:flex;flex-direction:column;position:relative}
 header{padding:18px 20px 12px;display:flex;align-items:center;justify-content:space-between}
-header h1{font-size:20px;font-weight:800;color:#000;box-shadow:inset 0 -9px 0 var(--yellow);display:inline-block;line-height:1.1}
+header h1{font-size:20px;font-weight:900;color:#000;box-shadow:inset 0 -9px 0 var(--yellow);display:inline-block;line-height:1.1}
 .lvl-pill{background:var(--yellow);border:2px solid var(--bd);border-radius:999px;
   padding:4px 12px;font-size:12px;color:#000;box-shadow:var(--sh2);font-family:var(--mono);font-weight:700}
-.lvl-pill b{color:#000}
 main{flex:1;overflow-y:auto;padding:0 16px 90px}
 .page{display:none}
 .page.active{display:block}
-/* 原 CSS fade 动画已由 GSAP timeline 接管，避免双重动画冲突 */
-.card{background:var(--card);border:3px solid var(--bd);border-radius:0;
-  padding:16px;margin-bottom:14px;box-shadow:var(--sh)}
-.card h3{font-size:14px;font-weight:800;margin-bottom:10px;display:flex;align-items:center;gap:6px}
-textarea,input[type=text],input[type=password]{width:100%;border:2px solid var(--bd);
-  border-radius:0;padding:10px 12px;font-size:14px;font-family:inherit;background:#fff;
-  color:var(--text);resize:vertical;outline:none;transition:box-shadow .15s}
-textarea:focus,input:focus{box-shadow:var(--sh2)}
-textarea{min-height:90px}
+.card{background:var(--card);border:3px solid var(--bd);padding:16px;margin-bottom:14px;box-shadow:var(--sh)}
+.card h3{font-size:14px;font-weight:900;margin-bottom:10px;display:flex;align-items:center;gap:6px}
+textarea{width:100%;border:2px solid var(--bd);padding:10px 12px;font-size:14px;font-family:var(--sans);
+  background:#fff;color:var(--text);resize:vertical;outline:none;min-height:90px;transition:box-shadow .15s}
+textarea:focus{box-shadow:var(--sh2)}
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:3px solid var(--bd);cursor:pointer;
-  border-radius:0;padding:12px 18px;font-size:14px;font-weight:800;transition:all .15s cubic-bezier(.34,1.56,.64,1)}
+  padding:12px 18px;font-size:14px;font-weight:900;font-family:var(--sans);transition:all .15s cubic-bezier(.34,1.56,.64,1)}
 .btn:active{transform:translate(3px,3px);box-shadow:1px 1px 0 #000}
 .btn-primary{background:var(--red);color:#000;width:100%;margin-top:12px;box-shadow:var(--sh)}
 .btn-primary:hover{box-shadow:6px 6px 0 #000;transform:translate(-2px,-2px)}
-.btn-primary:disabled{opacity:.5;cursor:not-allowed}
 .btn-ghost{background:#fff;color:#000;font-size:13px;padding:8px 14px;border-width:2px;box-shadow:var(--sh2)}
 .btn-danger{background:var(--yellow);color:#000;font-size:12px;padding:6px 12px;border-width:2px;box-shadow:var(--sh2)}
-details{margin-top:12px}
-summary{cursor:pointer;font-size:13px;color:var(--sub);user-select:none;padding:6px 0;font-family:var(--mono)}
-.cfg-grid{display:grid;gap:8px;margin-top:8px}
-.cfg-grid label{font-size:12px;color:var(--sub)}
 .hint{font-size:12px;color:var(--sub);margin-top:8px;line-height:1.6}
-/* 任务 */
+/* 示例灵感芯片 */
+.eg-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.eg{font-size:12px;background:var(--chip);border:2px solid var(--bd);padding:5px 10px;cursor:pointer;
+  font-family:var(--mono);box-shadow:var(--sh2);transition:all .15s}
+.eg:hover{background:var(--yellow);transform:translate(-1px,-1px);box-shadow:3px 3px 0 #000}
+/* 今日 */
 .stage-tag{display:inline-block;font-size:11px;background:var(--yellow);border:2px solid var(--bd);
-  color:#000;border-radius:0;padding:2px 8px;margin-bottom:8px;font-family:var(--mono);font-weight:700;box-shadow:var(--sh2)}
-.task{display:flex;gap:10px;padding:12px;border:2px solid var(--bd);border-radius:0;
-  margin-bottom:8px;background:#fff;transition:all .2s;position:relative;overflow:hidden}
+  color:#000;padding:2px 8px;margin-bottom:8px;font-family:var(--mono);font-weight:700;box-shadow:var(--sh2)}
+.task{display:flex;gap:10px;padding:12px;border:2px solid var(--bd);margin-bottom:8px;background:#fff;
+  transition:all .2s;position:relative;overflow:hidden}
 .task:nth-of-type(odd){background:var(--chip)}
 .task.done{opacity:.6;background:#eee}
 .task.done .t-title{text-decoration:line-through}
 .task input[type=checkbox]{appearance:none;-webkit-appearance:none;width:20px;height:20px;margin-top:2px;
-  border:2px solid var(--bd);background:#fff;cursor:pointer;flex-shrink:0;border-radius:0;position:relative}
+  border:2px solid var(--bd);background:#fff;cursor:pointer;flex-shrink:0;position:relative}
 .task input[type=checkbox]:checked{background:var(--red)}
 .task input[type=checkbox]:checked::after{content:'✓';position:absolute;inset:0;display:flex;
-  align-items:center;justify-content:center;color:#000;font-size:13px;font-weight:800}
+  align-items:center;justify-content:center;color:#000;font-size:13px;font-weight:900}
 .t-title{font-size:14px;font-weight:600;line-height:1.4}
 .t-meta{font-size:12px;color:var(--sub);margin-top:4px;font-family:var(--mono)}
 .t-verify{font-size:12px;color:var(--ok);margin-top:4px;font-weight:600}
 .t-exp{margin-left:auto;flex-shrink:0;font-size:12px;font-weight:700;color:var(--red);align-self:center;font-family:var(--mono)}
-.risks{background:#ffe3e3;border:2px solid var(--bd);border-radius:0;padding:10px 12px;
-  font-size:12px;color:#a02020;margin-bottom:10px;line-height:1.7;box-shadow:var(--sh2)}
-.rate{display:flex;align-items:center;gap:8px;font-size:13px;margin-bottom:10px;font-family:var(--mono)}
-.rate b{color:var(--red)}
-/* 进化 */
+/* 境界 */
 .hero{text-align:center;padding:26px 16px;position:relative}
-.hero .avatar{font-size:56px;animation:float 3s ease-in-out infinite;position:relative;z-index:1;
-  filter:drop-shadow(0 4px 0 rgba(0,0,0,.15))}
-@media (prefers-reduced-motion:reduce){.hero .avatar,.hero .avatar-ring{animation:none}}
-@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
-/* 头像呼吸光环：产品级「灵魂感」 */
 .avatar-wrap{position:relative;display:inline-block}
+.hero .avatar{font-size:56px;animation:float 3s ease-in-out infinite;position:relative;z-index:1}
 .avatar-ring{position:absolute;left:50%;top:50%;width:88px;height:88px;margin:-44px 0 0 -44px;
-  border:3px solid var(--yellow);border-radius:50%;z-index:0;
-  animation:ringPulse 2.4s ease-out infinite;pointer-events:none}
+  border:3px solid var(--yellow);border-radius:50%;z-index:0;animation:ringPulse 2.4s ease-out infinite;pointer-events:none}
+@media (prefers-reduced-motion:reduce){.hero .avatar,.avatar-ring,.expbar>i,.expbar>i::after{animation:none}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
 @keyframes ringPulse{0%{transform:scale(.75);opacity:.9}70%{transform:scale(1.15);opacity:0}100%{transform:scale(1.15);opacity:0}}
 .hero .job{font-size:19px;font-weight:900;margin-top:8px;color:var(--red);-webkit-text-stroke:1px #000;letter-spacing:1px}
 .hero .lv{font-size:13px;color:var(--sub);margin-top:4px;font-family:var(--mono)}
-/* 动态经验条：斜纹流动 + 流光扫过 */
 .expbar{height:16px;background:#fff;border:2px solid var(--bd);border-radius:999px;overflow:hidden;margin:16px 4px 6px;position:relative}
 .expbar>i{display:block;height:100%;border-radius:999px;position:relative;overflow:hidden;
   background:repeating-linear-gradient(45deg,var(--red) 0 10px,var(--yellow) 10px 20px);
-  background-size:28px 28px;animation:stripeFlow 1.2s linear infinite;
-  transition:width .6s cubic-bezier(.2,.8,.2,1)}
+  background-size:28px 28px;animation:stripeFlow 1.2s linear infinite;transition:width .6s cubic-bezier(.2,.8,.2,1)}
 .expbar>i::after{content:'';position:absolute;inset:0;
   background:linear-gradient(105deg,transparent 30%,rgba(255,255,255,.75) 50%,transparent 70%);
   background-size:200% 100%;animation:sheen 2.2s ease-in-out infinite}
-@media (prefers-reduced-motion:reduce){.expbar>i,.expbar>i::after{animation:none}}
 @keyframes stripeFlow{to{background-position:28px 0}}
 @keyframes sheen{0%{background-position:200% 0}100%{background-position:-100% 0}}
 .expnum{text-align:center;font-size:12px;color:var(--sub);font-family:var(--mono)}
 .stat-row{display:flex;gap:10px;margin-top:14px}
-.stat{flex:1;background:#fff;border:2px solid var(--bd);border-radius:0;padding:12px;text-align:center;box-shadow:var(--sh2)}
-.stat b{display:block;font-size:22px;font-weight:800;color:var(--red);font-family:var(--mono)}
+.stat{flex:1;background:#fff;border:2px solid var(--bd);padding:12px;text-align:center;box-shadow:var(--sh2)}
+.stat b{display:block;font-size:22px;font-weight:900;color:var(--red);font-family:var(--mono)}
 .stat span{font-size:11px;color:var(--sub)}
-.jobpath{margin-top:6px}
 .jobpath .jp{display:flex;align-items:center;gap:8px;font-size:13px;padding:8px 0;border-bottom:2px dashed var(--bd)}
 .jobpath .jp:last-child{border:none}
 .jp .dot{width:10px;height:10px;border-radius:50%;background:#fff;border:2px solid var(--bd);flex-shrink:0}
@@ -112,32 +93,106 @@ summary{cursor:pointer;font-size:13px;color:var(--sub);user-select:none;padding:
 .jp.cur b{color:var(--red)}
 .jp.lock{opacity:.4}
 /* 记忆 */
-.mem{border:2px solid var(--bd);border-left:6px solid var(--red);padding:12px;background:#fff;
-  border-radius:0;margin-bottom:10px;box-shadow:var(--sh2)}
+.mem{border:2px solid var(--bd);border-left:6px solid var(--red);padding:12px;background:#fff;margin-bottom:10px;box-shadow:var(--sh2)}
 .mem .m-goal{font-size:14px;font-weight:700}
 .mem .m-date{font-size:11px;color:var(--sub);margin:4px 0;font-family:var(--mono)}
-.mem .m-note{font-size:13px;color:var(--text);background:var(--chip);border:2px solid var(--bd);
-  border-radius:0;padding:8px 10px;margin-top:6px;line-height:1.6}
+.mem .m-note{font-size:13px;background:var(--chip);border:2px solid var(--bd);padding:8px 10px;margin-top:6px;line-height:1.6}
+.mem .m-thought{font-size:13px;background:#e8f7ee;border:2px solid var(--bd);border-left:6px solid var(--ok);
+  padding:8px 10px;margin-top:6px;line-height:1.6;font-weight:600}
 .empty{text-align:center;color:var(--sub);font-size:13px;padding:40px 20px;line-height:2}
+/* 记忆页顶部：即时复盘捕捉卡 */
+.quick-cap{border:3px solid var(--bd);background:#fff;padding:18px;margin-bottom:14px;box-shadow:var(--sh);
+  position:relative;overflow:hidden}
+.quick-cap::before{content:'';position:absolute;inset:-3px;border-radius:inherit;
+  background:conic-gradient(from 0deg,var(--red),var(--yellow),var(--ok),var(--red));
+  z-index:-1;mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);
+  -webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);
+  mask-composite:exclude;-webkit-mask-composite:xor;padding:3px;
+  animation:capRotate 4s linear infinite;opacity:.25}
+@media (prefers-reduced-motion:reduce){.quick-cap::before{animation:none;opacity:.12}}
+.quick-cap.pulse::before{opacity:.55;animation-duration:2s}
+@keyframes capRotate{to{transform:rotate(360deg)}}
+.quick-cap h4{font-size:14px;font-weight:900;margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.quick-cap h4 .dot-pulse{width:8px;height:8px;border-radius:50%;background:var(--red);
+  animation:dotPulse 1.2s ease-in-out infinite}
+@keyframes dotPulse{0%,100%{opacity:.3;transform:scale(.7)}50%{opacity:1;transform:scale(1.3)}}
+.quick-cap textarea{min-height:64px;margin-bottom:8px;
+  transition:box-shadow .3s,border-color .3s}
+.quick-cap textarea:focus{box-shadow:0 0 0 4px rgba(255,107,107,.18);border-color:var(--red)}
+.cap-bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+/* 语音按钮 */
+.voice-btn{display:inline-flex;align-items:center;gap:6px;border:2px solid var(--bd);background:#fff;
+  padding:8px 14px;font-size:12px;font-weight:700;cursor:pointer;font-family:var(--mono);
+  box-shadow:var(--sh2);transition:all .15s;color:#000}
+.voice-btn:active{transform:translate(2px,2px);box-shadow:1px 1px 0 #000}
+.voice-btn.recording{background:var(--red);color:#fff;border-color:var(--red);
+  animation:recPulse .8s ease-in-out infinite}
+@keyframes recPulse{0%,100%{box-shadow:0 0 0 0 rgba(255,107,107,.6)}50%{box-shadow:0 0 0 10px rgba(255,107,107,0)}}
+.voice-btn .mic-dot{width:8px;height:8px;border-radius:50%;background:var(--red)}
+.voice-btn.recording .mic-dot{background:#fff}
+/* 记忆条目内联编辑 */
+.mem .edit-inline{display:none;width:100%;margin-top:8px}
+.mem .edit-inline.show{display:block}
+.mem .edit-trigger{font-size:11px;color:var(--red);cursor:pointer;text-decoration:underline;font-family:var(--mono);
+  display:inline-block;margin-top:6px}
+.mem .edit-trigger:hover{color:#000}
+.mem .m-note.editable{border-style:dashed;border-color:var(--red);background:#fff;
+  cursor:pointer;transition:all .15s}
+.mem .m-note.editable:hover{border-style:solid;background:var(--chip)}
+/* 贡献热力图 */
+.contrib-wrap{border:3px solid var(--bd);background:#fff;padding:16px 14px 12px;margin-bottom:14px;box-shadow:var(--sh);overflow:hidden}
+.contrib-wrap h4{font-size:14px;font-weight:900;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.contrib-meta{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:12px;font-size:12px;font-family:var(--mono)}
+.streak-badge{background:var(--yellow);border:2px solid var(--bd);padding:2px 8px;font-weight:700;box-shadow:var(--sh2);
+  white-space:nowrap;display:inline-flex;align-items:center;gap:4px}
+.contrib-grid{display:flex;gap:3px;overflow-x:auto;padding-bottom:4px;-webkit-overflow-scrolling:touch}
+.contrib-col{display:flex;flex-direction:column;gap:3px;flex-shrink:0}
+.contrib-cell{width:13px;height:13px;border-radius:2px;background:#f0f0f0;border:1px solid #e0e0e0;position:relative;
+  transition:transform .12s;cursor:default}
+.contrib-cell:hover{transform:scale(1.4);z-index:2;border-color:var(--bd)}
+.contrib-cell.today{border-color:var(--bd);border-width:2px}
+.contrib-label{font-size:9px;color:#bbb;text-align:center;min-width:13px;margin-top:2px;font-family:var(--mono)}
+.contrib-legend{display:flex;align-items:center;gap:4px;font-size:10px;color:var(--sub);margin-top:8px;font-family:var(--mono)}
+.contrib-legend span{width:13px;height:13px;border-radius:2px;flex-shrink:0}
+.weekday-labels{display:flex;flex-direction:column;gap:3px;margin-right:4px;flex-shrink:0}
+.weekday-labels span{width:13px;height:13px;font-size:8px;color:#ccc;text-align:center;line-height:13px;font-family:var(--mono)}
+.contrib-scroll{display:flex;align-items:flex-start}
 /* 导航 */
 nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:520px;
   background:#fff;border-top:3px solid var(--bd);display:flex;padding:6px 0 calc(6px + env(safe-area-inset-bottom));z-index:10}
 nav button{flex:1;border:none;background:none;cursor:pointer;font-size:11px;color:var(--sub);
-  display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 0;font-family:inherit}
-nav button .ico{font-size:20px;padding:2px 6px;border:2px solid transparent;border-radius:0}
-nav button.active{color:#000;font-weight:800}
+  display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 0;font-family:var(--sans)}
+nav button .ico{font-size:20px;padding:3px 6px;border:2px solid transparent;line-height:0}
+nav button .ico svg{width:22px;height:22px;stroke:var(--sub);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+nav button.active{color:#000;font-weight:900}
 nav button.active .ico{background:var(--yellow);border-color:var(--bd)}
+nav button.active .ico svg{stroke:#000}
+/* 身份选择引导（首次进入） */
+.onboard{position:fixed;inset:0;background:rgba(11,13,18,.92);z-index:80;display:none;
+  align-items:center;justify-content:center;padding:20px}
+.onboard.show{display:flex}
+.onboard:not(.show){pointer-events:none;visibility:hidden}
+.ob-box{width:100%;max-width:440px}
+.ob-title{color:#fff;font-size:24px;font-weight:900;text-align:center;line-height:1.5}
+.ob-sub{color:#8a91a3;font-size:13px;text-align:center;margin:10px 0 24px;line-height:1.8}
+.id-card{display:flex;align-items:center;gap:14px;width:100%;background:#161a24;border:2px solid #262c3a;
+  padding:16px 18px;margin-bottom:12px;cursor:pointer;color:#f2f4f8;text-align:left;
+  font-family:var(--sans);transition:all .18s;opacity:0}
+.id-card:hover{border-color:var(--yellow);transform:translateX(6px)}
+.id-card .ic{font-size:26px}
+.id-card .nm{font-size:16px;font-weight:900}
+.id-card .ds{font-size:12px;color:#8a91a3;margin-top:2px}
+.id-card .ar{margin-left:auto;color:#8a91a3}
 /* 复盘弹窗 */
-.modal-mask{position:fixed;inset:0;background:rgba(0,0,0,.4);display:none;
-  align-items:flex-end;justify-content:center;z-index:50}
+.modal-mask{position:fixed;inset:0;background:rgba(0,0,0,.4);display:none;align-items:flex-end;justify-content:center;z-index:50}
 .modal-mask.show{display:flex}
-.modal{background:#fff;width:100%;max-width:520px;border-radius:0;border:3px solid var(--bd);border-bottom:none;
+.modal{background:#fff;width:100%;max-width:520px;border:3px solid var(--bd);border-bottom:none;
   box-shadow:6px 6px 0 #000;padding:20px;animation:up .3s ease}
 @keyframes up{from{transform:translateY(40px);opacity:0}to{transform:none;opacity:1}}
-.modal h3{font-size:16px;font-weight:800;margin-bottom:10px}
+.modal h3{font-size:16px;font-weight:900;margin-bottom:10px}
 canvas#fx{position:fixed;inset:0;pointer-events:none;z-index:99}
 .toast{position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#000;color:var(--yellow);
-  border:2px solid var(--yellow);font-size:13px;font-weight:700;padding:10px 18px;border-radius:0;
+  border:2px solid var(--yellow);font-size:13px;font-weight:700;padding:10px 18px;
   opacity:0;transition:opacity .3s;z-index:100;pointer-events:none;font-family:var(--mono)}
 .toast.show{opacity:.95}
 </style>
@@ -145,54 +200,59 @@ canvas#fx{position:fixed;inset:0;pointer-events:none;z-index:99}
 <body>
 <canvas id="fx"></canvas>
 <div class="toast" id="toast"></div>
+
+<!-- 首次进入：身份选择 -->
+<div class="onboard" id="onboard">
+  <div class="ob-box">
+    <div class="ob-title">你是谁？</div>
+    <div class="ob-sub">选择一个身份，源进化会按你的处境<br>给出贴合的灵感与拆解思路</div>
+    <button class="id-card" data-id="student"><span class="ic">🎒</span><span><div class="nm">学生</div><div class="ds">在课业之外，亲手做成一些真实的事</div></span><span class="ar">→</span></button>
+    <button class="id-card" data-id="maker"><span class="ic">🛠️</span><span><div class="nm">制作者</div><div class="ds">折腾项目、部署、拆机，把想法变成系统</div></span><span class="ar">→</span></button>
+    <button class="id-card" data-id="creator"><span class="ic">🎬</span><span><div class="nm">创作者</div><div class="ds">写作、视频、内容，让作品被看见</div></span><span class="ar">→</span></button>
+    <button class="id-card" data-id="explorer"><span class="ic">🧭</span><span><div class="nm">探索者</div><div class="ds">不设框架，自定义你的一切</div></span><span class="ar">→</span></button>
+    <div style="text-align:center;margin-top:8px"><span id="obSkip" style="color:#8a91a3;font-size:12px;cursor:pointer;text-decoration:underline;font-family:var(--mono)">先随便看看 →</span></div>
+  </div>
+</div>
+
 <div id="app">
   <header>
-    <h1>⚡ 进化规划器</h1>
-    <div class="lvl-pill">Lv.<b id="hLv">1</b> <span id="hJob">新手</span></div>
+    <h1>⚡ MONO CODE</h1>
+    <div class="lvl-pill">Lv.<b id="hLv">1</b> <span id="hJob">初醒</span></div>
   </header>
   <main>
-    <!-- 输入 -->
+    <!-- 灵感 -->
     <section class="page active" id="p-input">
       <div class="card">
         <h3>💡 灵感输入</h3>
-        <textarea id="goalInput" placeholder="写下一个真实目标，越具体越好。&#10;例：给笔记本清灰 / 配好 Kali 虚拟机 / 部署一个 GitHub 项目"></textarea>
+        <textarea id="goalInput" placeholder="写下一个真实目标，越具体越好。"></textarea>
+        <div class="eg-row" id="egRow"></div>
         <button class="btn btn-primary" id="btnSplit" onclick="splitGoal()">⚡ 最小单元拆解</button>
         <div class="hint">方法论：目标 → 拆为最小可执行步骤 → 动手落地 → 复盘巩固 → 沉淀复利</div>
-        <details>
-          <summary>⚙️ AI 接口配置（OpenAI 兼容，可选）</summary>
-          <div class="cfg-grid">
-            <label>接口地址<input type="text" id="cfgUrl" placeholder="https://api.openai.com/v1"></label>
-            <label>API Key<input type="password" id="cfgKey" placeholder="sk-..."></label>
-            <label>模型<input type="text" id="cfgModel" placeholder="gpt-4o-mini"></label>
-            <button class="btn btn-ghost" onclick="saveCfg()">保存配置</button>
-          </div>
-          <div class="hint">不配置则使用内置拆解模板。配置后由 AI 输出阶段、验证标准、风险预测与成功率。</div>
-        </details>
       </div>
       <div id="inputResult"></div>
     </section>
 
-    <!-- 今天 -->
+    <!-- 今日 -->
     <section class="page" id="p-today">
       <div id="todayBox"></div>
     </section>
 
-    <!-- 进化 -->
-    <section class="page" id="p-evolve">
+    <!-- 境界 -->
+    <section class="page" id="p-realm">
       <div class="card hero">
         <div class="avatar-wrap"><div class="avatar-ring"></div><div class="avatar" id="eAvatar">🌱</div></div>
-        <div class="job" id="eJob">新手</div>
-        <div class="lv">Level <span id="eLv">1</span></div>
+        <div class="job" id="eJob">初醒</div>
+        <div class="lv">境界 Lv.<span id="eLv">1</span></div>
         <div class="expbar"><i id="eBar" style="width:0%"></i></div>
-        <div class="expnum" id="eExp">0 / 100 EXP</div>
+        <div class="expnum" id="eExp">0 / 100 修为</div>
         <div class="stat-row">
-          <div class="stat"><b id="sDone">0</b><span>完成任务</span></div>
+          <div class="stat"><b id="sDone">0</b><span>落地行动</span></div>
           <div class="stat"><b id="sGoal">0</b><span>归档目标</span></div>
-          <div class="stat"><b id="sExp">0</b><span>总EXP</span></div>
+          <div class="stat"><b id="sExp">0</b><span>总修为</span></div>
         </div>
       </div>
       <div class="card">
-        <h3>🛤️ 转职路线</h3>
+        <h3>🛤️ 境界之路</h3>
         <div class="jobpath" id="jobPath"></div>
       </div>
     </section>
@@ -201,148 +261,217 @@ canvas#fx{position:fixed;inset:0;pointer-events:none;z-index:99}
     <section class="page" id="p-mem">
       <div class="card" style="display:flex;justify-content:space-between;align-items:center">
         <h3 style="margin:0">🧠 记忆库 · 复利沉淀</h3>
-        <button class="btn btn-danger" onclick="resetAll()">清空数据</button>
+        <div>
+          <button class="btn btn-ghost" onclick="reIdentity()">换身份</button>
+          <button class="btn btn-danger" onclick="exportData()" style="background:#fff;color:var(--sub);border-color:var(--sub);box-shadow:2px 2px 0 var(--sub);font-size:11px;padding:5px 10px">📤 导出</button>
+        </div>
+      </div>
+      <!-- 贡献热力图 -->
+      <div class="contrib-wrap" id="contribWrap"></div>
+      <!-- 即时捕捉卡 -->
+      <div class="quick-cap" id="quickCap">
+        <h4><span class="dot-pulse"></span> 即时复盘 · 把今天的事刻进原思维</h4>
+        <textarea id="capNote" placeholder="刚刚做完的事，有什么想对自己说的？（卡在哪 / 学到什么 / 下次怎么更快）"></textarea>
+        <div class="cap-bar">
+          <button class="btn btn-primary" style="width:auto;margin:0;padding:8px 16px;font-size:13px" onclick="capSave()">⚡ 沉淀入库</button>
+          <button class="voice-btn" id="voiceBtn" onclick="toggleVoice()">
+            <span class="mic-dot"></span> <span id="voiceLabel">语音输入</span>
+          </button>
+          <span style="font-size:11px;color:var(--sub);font-family:var(--mono)" id="voiceHint"></span>
+        </div>
       </div>
       <div id="memBox"></div>
     </section>
   </main>
 
   <nav>
-    <button class="active" data-p="p-input" onclick="go(this)"><span class="ico">💡</span>输入</button>
-    <button data-p="p-today" onclick="go(this)"><span class="ico">✅</span>今天</button>
-    <button data-p="p-evolve" onclick="go(this)"><span class="ico">🧬</span>进化</button>
-    <button data-p="p-mem" onclick="go(this)"><span class="ico">🧠</span>记忆</button>
+    <button class="active" data-p="p-input" onclick="go(this)"><span class="ico"><svg viewBox="0 0 24 24">
+      <path class="bulb-body" d="M12 4a5.5 5.5 0 0 0-3.4 9.8c.7.6 1 1.3 1 2.2h4.8c0-.9.3-1.6 1-2.2A5.5 5.5 0 0 0 12 4z"/>
+      <path d="M9.5 19h5M10.5 21.5h3"/>
+      <line class="ray" x1="12" y1="0.5" x2="12" y2="2.5"/>
+      <line class="ray" x1="4.2" y1="3.4" x2="5.6" y2="4.8"/>
+      <line class="ray" x1="19.8" y1="3.4" x2="18.4" y2="4.8"/>
+      <line class="ray" x1="1" y1="9.5" x2="3" y2="9.5"/>
+      <line class="ray" x1="23" y1="9.5" x2="21" y2="9.5"/>
+    </svg></span>灵感</button>
+    <button data-p="p-today" onclick="go(this)"><span class="ico"><svg viewBox="0 0 24 24">
+      <rect x="3.5" y="3.5" width="17" height="17" rx="2"/>
+      <polyline class="ck" points="7.5 12.5 10.5 15.5 16.5 8.5"/>
+    </svg></span>To-Do</button>
+    <button data-p="p-realm" onclick="go(this)"><span class="ico"><svg viewBox="0 0 24 24">
+      <path d="M4 20 L9.5 8 L13.5 14 L16.5 9 L21 20 Z"/>
+      <circle cx="17.5" cy="4.5" r="1.6"/>
+    </svg></span>境界</button>
+    <button data-p="p-mem" onclick="go(this)"><span class="ico"><svg viewBox="0 0 24 24">
+      <path d="M12 3 3 8l9 5 9-5-9-5z"/>
+      <path d="M3 13l9 5 9-5"/>
+      <path d="M3 17.5l9 5 9-5"/>
+    </svg></span>记忆</button>
   </nav>
 </div>
 
 <!-- 复盘弹窗 -->
 <div class="modal-mask" id="reviewMask">
   <div class="modal">
-    <h3>🎯 全部完成！复盘归档</h3>
-    <div class="hint" style="margin:0 0 10px">写下来：卡在哪？学到什么？下次怎么更快？——这是沉淀为预测模型的关键一步。</div>
-    <textarea id="reviewNote" placeholder="例：清灰时螺丝刀型号不对卡了10分钟，下次先核对工具清单"></textarea>
-    <button class="btn btn-primary" onclick="archiveGoal()">📦 归档入库（+50 EXP）</button>
+    <h3>🎯 全部落地！复盘归档</h3>
+    <div class="hint" style="margin:0 0 10px">复盘方法论：卡在哪？学到什么？下次怎么更快？感想将沉淀为你的「原思维」雏形。</div>
+    <textarea id="reviewNote" placeholder="🛠 复盘：例：清灰时螺丝刀型号不对卡了10分钟，下次先核对工具清单"></textarea>
+    <textarea id="reviewThought" style="margin-top:8px;min-height:70px" placeholder="💭 感想：做完这件事，你对自己有了什么新认识？（例：原来我真的可以独立拆机，手比想象中稳）"></textarea>
+    <button class="btn btn-primary" onclick="archiveGoal()">📦 归档入库（+50 修为）</button>
   </div>
 </div>
 
 <script>
 /* ============ 数据层 ============ */
-const KEY='evolve_v1';
+const KEY='sourcevolve_v1';
 let S=load();
 function load(){
   try{const d=JSON.parse(localStorage.getItem(KEY));if(d)return d;}catch(e){}
-  return {exp:0,doneTasks:0,goal:null,tasks:[],mem:[],cfg:{url:'',key:'',model:''}};
+  return {exp:0,doneTasks:0,goal:null,tasks:[],mem:[],identity:null,dailyActivity:{}};
 }
 function save(){localStorage.setItem(KEY,JSON.stringify(S));}
-const JOBS=[[1,'新手','🌱'],[3,'践行者','🌿'],[5,'拆解师','⚔️'],[8,'进化者','🔥'],[12,'大师','👑']];
+
+/* 每日活动追踪 */
+function trackToday(){
+  const today=new Date().toISOString().slice(0,10);
+  S.dailyActivity[today]=(S.dailyActivity[today]||0)+1;
+  save();
+}
+function streakDays(){
+  let c=0,d=new Date();
+  while(true){
+    const k=d.toISOString().slice(0,10);
+    if(S.dailyActivity[k]){c++;d.setDate(d.getDate()-1);}
+    else break;
+  }
+  return c;
+}
+
+/* 境界体系：初醒→践行→修行→精进→宗师 */
+const JOBS=[[1,'初醒','🌱'],[3,'践行者','🌿'],[5,'修行者','⚔️'],[8,'精进者','🔥'],[12,'宗师','👑']];
 function level(){let l=1,e=S.exp;while(e>=expNeed(l)){e-=expNeed(l);l++;}return l;}
 function expNeed(l){return 100+(l-1)*50;}
 function expInLevel(){let l=1,e=S.exp;while(e>=expNeed(l)){e-=expNeed(l);l++;}return e;}
 function job(){const l=level();let j=JOBS[0];for(const x of JOBS)if(l>=x[0])j=x;return j;}
 
-/* ============ 导航（GSAP 接管页面切换转场） ============ */
+/* ============ 身份体系 ============ */
+const IDENTITIES={
+  student:{name:'学生',examples:['背完九九乘法表的一行','预习明天要学的两页课本','做半页配套练习册自检','背 10 个英语单词','把错题本补上今天的一道题','整理好自己的书包和书桌']},
+  maker:{name:'制作者',examples:['修好家里一个失灵的小物件','整理电脑桌面和文件夹','学会一个软件的新功能','给手机清理存储空间','跟着教程拼一个小东西','写 20 行解决小问题的小脚本']},
+  creator:{name:'创作者',examples:['写 300 字今天的日记','拍出 3 张自己满意的照片','录一段 1 分钟的语音随笔','画一幅小涂鸦','整理自己的灵感收集箱','读完一篇好文章并摘抄三句']},
+  explorer:{name:'探索者',examples:['学会做一道新菜','出门走满 3000 步','整理房间的一个角落','读完一本书的 30 页','给家人做一件小事','认识一种路边的新植物']}
+};
+function renderExamples(){
+  const row=document.getElementById('egRow');
+  const idt=S.identity?IDENTITIES[S.identity]:null;
+  if(!idt){row.innerHTML='';return;}
+  row.innerHTML=idt.examples.map(e=>'<span class="eg" onclick="fillEg(this)">'+e+'</span>').join('');
+}
+function fillEg(el){
+  document.getElementById('goalInput').value=el.textContent;
+  document.getElementById('goalInput').focus();
+}
+
+/* ============ 导航 ============ */
 function go(btn){
   document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
+  // 物理按压反馈：按下 → 弹回（Active State 触感）
+  if(G_OK&&!RM){
+    gsap.killTweensOf(btn);
+    gsap.fromTo(btn,{scale:1},{scale:.88,duration:.07,ease:'power2.in',
+      onComplete:()=>gsap.to(btn,{scale:1,duration:.32,ease:'elastic.out(1,0.5)',clearProps:'transform'})});
+  }
+  animIcon(btn);
   const targetId=btn.dataset.p;
   const cur=document.querySelector('.page.active');
   const next=document.getElementById(targetId);
   if(cur===next){render();return;}
-  // GSAP 可用时：旧页面淡出上飘 → 新页面淡入 + 播放入场动画
-  if(window.gsap&&cur){
+  if(window.gsap&&cur&&!RM){
     gsap.to(cur,{opacity:0,y:-14,duration:.2,ease:'power2.in',onComplete:()=>{
       cur.classList.remove('active');gsap.set(cur,{clearProps:'all'});
       next.classList.add('active');
       gsap.fromTo(next,{opacity:0,y:18},{opacity:1,y:0,duration:.32,ease:'power2.out',
         onComplete:()=>gsap.set(next,{clearProps:'all'})});
-      render();
-      playEnter(targetId);
+      render();playEnter(targetId);
     }});
   }else{
     document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-    next.classList.add('active');
-    render();
-    playEnter(targetId);
+    next.classList.add('active');render();playEnter(targetId);
   }
 }
 function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');
   setTimeout(()=>t.classList.remove('show'),1800);}
 
-/* ============ 拆解 ============ */
-function saveCfg(){
-  S.cfg={url:document.getElementById('cfgUrl').value.trim(),
-         key:document.getElementById('cfgKey').value.trim(),
-         model:document.getElementById('cfgModel').value.trim()};
-  save();toast('配置已保存');
+/* 导航图标动效：灯泡点亮发光 / 勾选划线 / 山峰跃起 / 层叠脉动 */
+function animIcon(btn){
+  if(!G_OK||RM)return;
+  const svg=btn.querySelector('svg');if(!svg)return;
+  const p=btn.dataset.p;
+  if(p==='p-input'){
+    // 思维被点亮：光线从灯泡四周散发（缩放展开+渐隐两连闪）
+    const rays=svg.querySelectorAll('.ray');
+    gsap.fromTo(rays,{opacity:0,scale:.2,transformOrigin:'12px 12px'},
+      {opacity:1,scale:1.2,stagger:.05,duration:.22,ease:'power2.out',yoyo:true,repeat:1,repeatDelay:.12});
+    const body=svg.querySelector('.bulb-body');
+    gsap.fromTo(body,{fill:'rgba(255,217,61,.9)'},{fill:'rgba(255,217,61,0)',duration:.8,ease:'power2.out'});
+  }else if(p==='p-today'){
+    // 勾勾以描边动画划出来
+    const ck=svg.querySelector('.ck');
+    const len=ck.getTotalLength();
+    gsap.fromTo(ck,{strokeDasharray:len,strokeDashoffset:len},
+      {strokeDashoffset:0,duration:.45,ease:'power2.out'});
+    gsap.fromTo(svg.querySelector('rect'),{scale:.9,transformOrigin:'12px 12px'},
+      {scale:1,duration:.3,ease:'back.out(2)'});
+  }else if(p==='p-realm'){
+    // 山峰向上跃起
+    gsap.fromTo(svg,{y:3},{y:-3,duration:.28,ease:'power2.out',yoyo:true,repeat:1});
+  }else if(p==='p-mem'){
+    // 记忆层叠：三层依次脉冲
+    const layers=svg.querySelectorAll('path');
+    gsap.fromTo(layers,{opacity:.3},{opacity:1,stagger:.1,duration:.25,ease:'power2.out'});
+  }
 }
-const SPLIT_PROMPT=`你是任务拆解专家。把用户目标拆成最小可执行步骤（每步5-30分钟，今天就能动手）。
-严格只输出JSON，不要markdown代码块：
-{"successRate":75,"risks":["风险1","风险2"],"stages":[{"name":"阶段名","tasks":[{"title":"具体动作","verify":"可检验的完成标准","minutes":15}]}]}
-要求：2-4个阶段，总共4-10个任务，每个任务都必须今天可执行、有明确验证标准。`;
 
-async function splitGoal(){
+/* ============ 拆解（本地模板，v1.0 无 AI） ============ */
+function splitGoal(){
   const goal=document.getElementById('goalInput').value.trim();
   if(!goal)return toast('先写一个目标');
-  const btn=document.getElementById('btnSplit');
-  btn.disabled=true;btn.textContent='⚙️ 拆解中...';
-  let data=null;
-  if(S.cfg.url&&S.cfg.key&&S.cfg.model){
-    try{
-      const r=await fetch(S.cfg.url.replace(/\/+$/,'')+'/chat/completions',{
-        method:'POST',
-        headers:{'Content-Type':'application/json','Authorization':'Bearer '+S.cfg.key},
-        body:JSON.stringify({model:S.cfg.model,temperature:0.7,
-          messages:[{role:'system',content:SPLIT_PROMPT},{role:'user',content:goal}]})
-      });
-      const j=await r.json();
-      let txt=j.choices[0].message.content.trim().replace(/^```(json)?|```$/g,'').trim();
-      data=JSON.parse(txt);
-    }catch(e){toast('AI 调用失败，已用内置模板');}
-  }
-  if(!data)data=localSplit(goal);
-  S.goal=goal;
-  S.tasks=[];let id=0;
+  const data=localSplit(goal);
+  S.goal=goal;S.tasks=[];let id=0;
   for(const st of data.stages)for(const t of st.tasks)
     S.tasks.push({id:++id,stage:st.name,title:t.title,verify:t.verify||'',minutes:t.minutes||15,done:false});
-  S.risks=data.risks||[];S.rate=data.successRate||null;
-  save();render();
-  btn.disabled=false;btn.textContent='⚡ 最小单元拆解';
-  renderInputResult();
-  toast('拆解完成，去「今天」打卡');
+  save();render();playEnter('p-input');
+  toast('拆解完成，去「今日」打卡');
 }
 function localSplit(goal){
-  return {successRate:70,
-    risks:['目标过大导致迟迟不动手——先从第一步开始','环境/工具缺失——第一步先核对前置条件','中途被打断——每步控制在30分钟内'],
-    stages:[
-      {name:'准备',tasks:[
-        {title:'明确最终验收标准，一句话写下来',verify:'能向别人说清"做成什么样算完成"',minutes:5},
-        {title:'核对所需工具/环境/资料是否齐全',verify:'清单逐项打勾，缺的先补齐',minutes:10}]},
-      {name:'执行',tasks:[
-        {title:'完成「'+goal.slice(0,12)+'」的第一步最小动作',verify:'产生一个可见的中间结果',minutes:20},
-        {title:'推进主体工作，遇到卡点立即记录',verify:'核心部分完成，卡点已逐条记下',minutes:30},
-        {title:'收尾并自检验收标准',verify:'对照第1步的标准逐项确认',minutes:15}]},
-      {name:'沉淀',tasks:[
-        {title:'写3行复盘：卡在哪/学到什么/下次怎么更快',verify:'复盘文字不少于3行',minutes:10}]}]};
+  return {stages:[
+    {name:'准备',tasks:[
+      {title:'明确最终验收标准，一句话写下来',verify:'能向别人说清"做成什么样算完成"',minutes:5},
+      {title:'核对所需工具/环境/资料是否齐全',verify:'清单逐项打勾，缺的先补齐',minutes:10}]},
+    {name:'执行',tasks:[
+      {title:'完成「'+goal.slice(0,12)+'」的第一步最小动作',verify:'产生一个可见的中间结果',minutes:20},
+      {title:'推进主体工作，遇到卡点立即记录',verify:'核心部分完成，卡点已逐条记下',minutes:30},
+      {title:'收尾并自检验收标准',verify:'对照第1步的标准逐项确认',minutes:15}]},
+    {name:'沉淀',tasks:[
+      {title:'写3行复盘：卡在哪/学到什么/下次怎么更快',verify:'复盘文字不少于3行',minutes:10}]}]};
 }
 function renderInputResult(){
   const box=document.getElementById('inputResult');
   if(!S.goal){box.innerHTML='';return[];}
-  let h='<div class="card" data-anim><h3>🎯 当前目标</h3><div style="font-size:15px;font-weight:700">'+esc(S.goal)+'</div>';
-  if(S.rate)h+='<div class="rate" style="margin-top:8px">📈 预估成功率 <b>'+S.rate+'%</b></div>';
-  if(S.risks&&S.risks.length)h+='<div class="risks" style="margin-top:8px">⚠️ <b>风险预测</b><br>'+S.risks.map(r=>'· '+esc(r)).join('<br>')+'</div>';
-  h+='<button class="btn btn-ghost" style="margin-top:8px" onclick="go(document.querySelectorAll(\'nav button\')[1])">去「今天」打卡 →</button></div>';
+  let h='<div class="card"><h3>🎯 当前目标</h3><div style="font-size:15px;font-weight:700">'+esc(S.goal)+'</div>';
+  h+='<button class="btn btn-ghost" style="margin-top:8px" onclick="go(document.querySelectorAll(\'nav button\')[1])">去「今日」打卡 →</button></div>';
   box.innerHTML=h;
   return Array.from(box.children);
 }
 
-/* ============ 今天 ============ */
+/* ============ 今日 ============ */
 function renderToday(){
   const box=document.getElementById('todayBox');
   if(!S.goal||!S.tasks.length){
-    box.innerHTML='<div class="empty">今天还没有任务<br>先去「输入」页拆解一个目标 ⚡</div>';return Array.from(box.children);}
+    box.innerHTML='<div class="empty">今天还没有行动<br>先去「灵感」页拆解一个目标 ⚡</div>';return Array.from(box.children);}
   const doneN=S.tasks.filter(t=>t.done).length;
-  let h='<div class="card"><h3>🎯 '+esc(S.goal)+'</h3><div class="hint">'+doneN+' / '+S.tasks.length+' 已完成</div></div>';
-  if(S.risks&&S.risks.length)h+='<div class="risks">⚠️ <b>风险预测</b><br>'+S.risks.map(r=>'· '+esc(r)).join('<br>')+'</div>';
+  let h='<div class="card"><h3>🎯 '+esc(S.goal)+'</h3><div class="hint">'+doneN+' / '+S.tasks.length+' 已落地</div></div>';
   let lastStage='';
   for(const t of S.tasks){
     if(t.stage!==lastStage){h+='<div class="stage-tag">'+esc(t.stage)+'</div>';lastStage=t.stage;}
@@ -354,7 +483,7 @@ function renderToday(){
       +'</div><div class="t-exp">+'+taskExp(t)+'</div></label>';
   }
   if(doneN===S.tasks.length&&S.tasks.length>0)
-    h+='<button class="btn btn-primary" onclick="openReview()">🎉 全部完成 · 复盘归档</button>';
+    h+='<button class="btn btn-primary" onclick="openReview()">🎉 全部落地 · 复盘归档</button>';
   box.innerHTML=h;
   return Array.from(box.children);
 }
@@ -364,54 +493,41 @@ function checkTask(id,el){
   t.done=el.checked;
   if(t.done){
     S.exp+=taskExp(t);S.doneTasks++;
+    trackToday();
     const r=el.getBoundingClientRect();
-    burst(r.left+10,r.top+10);ding();popTask(el);
-    expFlyFx(r.left+10,r.top+10,'+'+taskExp(t)+' EXP');
+    burst(r.left+10,r.top+10);popTask(el);
+    expFlyFx(r.left+10,r.top+10,'+'+taskExp(t)+' 修为');
     const l0=level();save();
-    if(level()>l0){setTimeout(()=>{fanfare();burst(innerWidth/2,innerHeight/3,60);toast('🎉 升级！Lv.'+level()+' · '+job()[1]);},300);}
+    if(level()>l0){setTimeout(()=>{burst(innerWidth/2,innerHeight/3,60);toast('🎉 境界提升！Lv.'+level()+' · '+job()[1]);},300);}
   }else{S.exp-=taskExp(t);S.doneTasks--;}
   save();renderHeader();renderToday();
 }
-/* EXP 飘分：勾选处浮出 +N EXP 飘向顶部等级 pill（GSAP 驱动，失败降级静默） */
-function expFlyFx(x,y,txt){
-  if(!window.gsap||RM)return;
-  const pill=document.querySelector('.lvl-pill');
-  const pr=pill?pill.getBoundingClientRect():{left:innerWidth/2,top:20};
-  const f=document.createElement('div');
-  f.textContent=txt;
-  f.style.cssText='position:fixed;left:'+x+'px;top:'+y+'px;z-index:120;pointer-events:none;'
-    +'font-family:var(--mono);font-weight:700;font-size:13px;color:#000;'
-    +'background:var(--yellow);border:2px solid #000;padding:2px 8px;box-shadow:2px 2px 0 #000';
-  document.body.appendChild(f);
-  gsap.timeline({onComplete:()=>f.remove()})
-    .to(f,{y:-26,duration:.35,ease:'power2.out'})
-    .to(f,{x:pr.left-x+pr.width/2,y:pr.top-y,scale:.6,duration:.55,ease:'power2.in'},'-=.05')
-    .to(f,{opacity:0,duration:.15},'-=.1')
-    .fromTo(pill,{scale:1},{scale:1.15,yoyo:true,repeat:1,duration:.15,ease:'power2.inOut'},'-=.3');
-}
-function openReview(){document.getElementById('reviewMask').classList.add('show');ding();}
+function openReview(){document.getElementById('reviewMask').classList.add('show');}
 function archiveGoal(){
   const note=document.getElementById('reviewNote').value.trim();
+  const thought=document.getElementById('reviewThought').value.trim();
   S.mem.unshift({goal:S.goal,date:new Date().toLocaleString('zh-CN'),
-    tasks:S.tasks.length,note:note||'（未写复盘）'});
-  S.exp+=50;S.goal=null;S.tasks=[];S.risks=[];S.rate=null;
+    tasks:S.tasks.length,note:note||'（未写复盘）',thought:thought||''});
+  S.exp+=50;S.goal=null;S.tasks=[];
+  trackToday();
   document.getElementById('reviewNote').value='';
+  document.getElementById('reviewThought').value='';
   document.getElementById('reviewMask').classList.remove('show');
-  save();fanfare();burst(innerWidth/2,innerHeight/2,80);
-  toast('📦 已归档 +50 EXP');render();
+  save();burst(innerWidth/2,innerHeight/2,80);
+  toast('📦 已归档 +50 修为');render();
 }
 document.getElementById('reviewMask').addEventListener('click',e=>{
   if(e.target.id==='reviewMask')e.target.classList.remove('show');});
 
-/* ============ 进化/记忆 ============ */
-function renderEvolve(){
+/* ============ 境界/记忆 ============ */
+function renderRealm(){
   const l=level(),j=job();
   document.getElementById('eAvatar').textContent=j[2];
   document.getElementById('eJob').textContent=j[1];
   document.getElementById('eLv').textContent=l;
   const cur=expInLevel(),need=expNeed(l);
   document.getElementById('eBar').style.width=Math.min(100,cur/need*100)+'%';
-  document.getElementById('eExp').textContent=cur+' / '+need+' EXP';
+  document.getElementById('eExp').textContent=cur+' / '+need+' 修为';
   document.getElementById('sDone').textContent=S.doneTasks;
   document.getElementById('sGoal').textContent=S.mem.length;
   document.getElementById('sExp').textContent=S.exp;
@@ -420,28 +536,192 @@ function renderEvolve(){
     return '<div class="jp '+st+'"><span class="dot"></span>'+x[2]+' <b>'+x[1]+'</b><span style="margin-left:auto;font-size:12px;color:var(--sub)">Lv.'+x[0]+(st==='cur'?' · 已达成':'')+'</span></div>';
   }).join('');
 }
-function renderMem(){
-  const box=document.getElementById('memBox');
-  if(!S.mem.length){box.innerHTML='<div class="empty">记忆库还是空的<br>完成一个目标并复盘归档，开始复利 🧠</div>';return Array.from(box.children);}
-  box.innerHTML=S.mem.map(m=>'<div class="mem"><div class="m-goal">'+esc(m.goal)+'</div>'
-    +'<div class="m-date">'+m.date+' · '+m.tasks+'个任务</div>'
-    +'<div class="m-note">'+esc(m.note)+'</div></div>').join('');
-  return Array.from(box.children);
-}
-function resetAll(){
-  if(!confirm('确定清空所有数据？EXP、任务、记忆库都会丢失。'))return;
-  localStorage.removeItem(KEY);S=load();render();toast('已重置');
+function renderContrib(){
+  const wrap=document.getElementById('contribWrap');
+  const today=new Date().toISOString().slice(0,10);
+  // 算最近 12 周（84 天）
+  const end=new Date();end.setHours(23,59,59,999);
+  const start=new Date(end);start.setDate(end.getDate()-83);
+  start.setHours(0,0,0,0);
+  // 对齐到周一
+  const dow=start.getDay();const off=dow===0?6:dow-1;
+  start.setDate(start.getDate()-off);
+
+  const weeks=[];
+  let cur=new Date(start);
+  while(cur<=end){
+    const col=[];
+    for(let d=0;d<7;d++){
+      const ds=cur.toISOString().slice(0,10);
+      const n=S.dailyActivity[ds]||0;
+      col.push({date:ds,count:n,isToday:ds===today});
+      cur.setDate(cur.getDate()+1);
+    }
+    weeks.push(col);
+  }
+
+  // 颜色阶梯：0=灰 1=浅黄 2-3=黄 4-5=橙 6+=红
+  function cellColor(n){
+    if(n===0)return'#f0f0f0';if(n===1)return'#fff3d6';
+    if(n<=3)return'#ffd93d';if(n<=5)return'#ff9f43';return'#ff6b6b';
+  }
+
+  let h='<h4>🔥 行动足迹 <span style="font-size:12px;font-weight:400;color:var(--sub)">（最近12周）</span></h4>';
+  h+='<div class="contrib-meta">';
+  const sd=streakDays();
+  const totalDays=Object.keys(S.dailyActivity).length;
+  h+='<span class="streak-badge">🔥 连续 '+sd+' 天</span>';
+  h+='<span style="color:var(--sub)">共 '+totalDays+' 个活跃日</span>';
+  h+='<span style="color:var(--sub)">'+S.mem.length+' 个归档目标</span>';
+  h+='</div>';
+
+  h+='<div class="contrib-scroll"><div class="weekday-labels">';
+  // 周几标签（只显示 一三五日）
+  const wdLabels=['一','','三','','五','','日'];
+  wdLabels.forEach(l=>h+='<span>'+(l||'')+'</span>');
+  h+='</div><div class="contrib-grid">';
+
+  // 月份标签行
+  const months=[];
+  weeks.forEach((col,i)=>{
+    const firstDate=col[0].date;
+    const mon=firstDate.slice(5,7);
+    if(!months.length||months[months.length-1].mon!==mon){
+      months.push({mon,idx:i});
+    }
+  });
+  // 月份行
+  h+='<div class="contrib-col" style="margin-right:2px">';
+  for(let i=0;i<weeks.length;i++){
+    const m=months.find(m=>m.idx===i);
+    h+='<div class="contrib-label">'+(m?m.mon+'月':'')+'</div>';
+  }
+  h+='</div>';
+
+  weeks.forEach(col=>{
+    h+='<div class="contrib-col">';
+    col.forEach(c=>{
+      h+='<div class="contrib-cell'+(c.isToday?' today':'')+'" style="background:'+cellColor(c.count)+
+        '" title="'+c.date+' · '+c.count+'次行动"></div>';
+    });
+    h+='</div>';
+  });
+  h+='</div></div>';
+
+  // 颜色图例
+  h+='<div class="contrib-legend">少 ';
+  [0,1,3,5,7].forEach(n=>h+='<span style="background:'+cellColor(n)+'"></span>');
+  h+=' 多</div>';
+
+  wrap.innerHTML=h;
+  return Array.from(wrap.children);
 }
 
-/* ============ 音效 & 粒子 ============ */
-let AC=null;
-function ac(){if(!AC)AC=new (window.AudioContext||window.webkitAudioContext)();return AC;}
-function tone(f,d,type='sine',v=.15,t=0){const c=ac(),o=c.createOscillator(),g=c.createGain();
-  o.type=type;o.frequency.value=f;g.gain.setValueAtTime(v,c.currentTime+t);
-  g.gain.exponentialRampToValueAtTime(.001,c.currentTime+t+d);
-  o.connect(g).connect(c.destination);o.start(c.currentTime+t);o.stop(c.currentTime+t+d);}
-function ding(){try{tone(880,.12);tone(1320,.18,'sine',.12,.08);}catch(e){}}
-function fanfare(){try{[523,659,784,1047].forEach((f,i)=>tone(f,.25,'triangle',.15,i*.1));}catch(e){}}
+function renderMem(){
+  const box=document.getElementById('memBox');
+  if(!S.mem.length){box.innerHTML='<div class="empty">记忆库还是空的<br>完成一个目标并复盘归档，开始复利 🧠<br><br><span style="font-size:12px;color:var(--sub)">👆 点击「即时复盘」用文字或语音记录</span></div>';return Array.from(box.children);}
+  box.innerHTML=S.mem.map((m,i)=>{
+    const isBlank=!m.note||m.note==='（未写复盘）';
+    const n=isBlank
+      ?'<div class="m-note editable" onclick="expandEdit('+i+')" title="点击编辑">✏️ 点击写下复盘...</div>'
+      :'<div class="m-note">'+esc(m.note)+'</div>';
+    const eid='mEdit'+i;
+    return '<div class="mem"><div class="m-goal">'+esc(m.goal)+'</div>'
+      +'<div class="m-date">'+m.date+' · '+m.tasks+'个行动</div>'
+      +'<div class="edit-inline" id="'+eid+'"><textarea id="mEditTA'+i+'" style="min-height:60px">'+(isBlank?'':esc(m.note))+'</textarea>'
+      +'<button class="btn btn-ghost" onclick="saveEdit('+i+')" style="margin-top:4px;padding:6px 12px;font-size:12px">💾 保存</button></div>'
+      +n
+      +(m.thought?'<div class="m-thought">💭 '+esc(m.thought)+'</div>':'')
+      +'</div>';
+  }).join('');
+  return Array.from(box.children);
+}
+function expandEdit(i){
+  const eid='mEdit'+i;
+  document.getElementById(eid).classList.add('show');
+  const ta=document.getElementById('mEditTA'+i);
+  ta.focus();
+  // 入场动效
+  if(G_OK&&!RM){
+    gsap.fromTo('#'+eid,{height:0,opacity:0},{height:'auto',opacity:1,duration:.35,ease:'power2.out'});
+  }
+}
+function saveEdit(i){
+  const ta=document.getElementById('mEditTA'+i);
+  S.mem[i].note=ta.value.trim()||'（未写复盘）';
+  save();render();playEnter('p-mem');
+  toast('✅ 复盘已保存');
+}
+function resetAll(){
+  if(!confirm('确定清空所有数据？修为、行动、记忆库都会丢失。'))return;
+  localStorage.removeItem(KEY);S=load();render();toast('已重置');
+}
+function exportData(){
+  const blob=new Blob([JSON.stringify(S,null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  a.download='eros-backup-'+new Date().toISOString().slice(0,10)+'.json';a.click();
+  toast('📤 数据已导出');
+}
+function reIdentity(){S.identity=null;save();showOnboard();}
+
+/* ============ 即时捕捉 ============ */
+function capSave(){
+  const note=document.getElementById('capNote').value.trim();
+  if(!note)return toast('写点什么再沉淀');
+  const cap=document.getElementById('quickCap');
+  // 保存时脉冲强化
+  if(G_OK&&!RM){
+    cap.classList.add('pulse');
+    setTimeout(()=>cap.classList.remove('pulse'),600);
+  }
+  S.mem.unshift({goal:'即时复盘',date:new Date().toLocaleString('zh-CN'),
+    tasks:0,note:note,thought:''});
+  S.exp+=10;
+  trackToday();
+  document.getElementById('capNote').value='';
+  save();render();playEnter('p-mem');
+  toast('📦 已沉淀 +10 修为');
+  burst(cap.getBoundingClientRect().left+cap.offsetWidth/2,cap.getBoundingClientRect().top+30,20);
+}
+
+/* ============ 语音输入（Web Speech API · Chrome/Edge 原生支持） ============ */
+let recog=null;let isRec=false;
+function toggleVoice(){
+  if(isRec){stopVoice();return;}
+  const SpeechRecognition=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SpeechRecognition){toast('⚠️ 当前浏览器不支持语音输入，请用 Chrome 或 Edge');return;}
+  if(!recog){
+    recog=new SpeechRecognition();
+    recog.lang='zh-CN';recog.interimResults=true;recog.continuous=true;
+    recog.onresult=e=>{
+      let txt='';
+      for(let i=0;i<e.results.length;i++)txt+=e.results[i][0].transcript;
+      document.getElementById('capNote').value=txt;
+      document.getElementById('capNote').focus();
+    };
+    recog.onerror=e=>{if(e.error!=='no-speech')toast('语音识别出错: '+e.error);stopVoice();};
+    recog.onend=()=>{if(isRec)recog.start();};
+  }
+  startVoice();
+}
+function startVoice(){
+  isRec=true;
+  const btn=document.getElementById('voiceBtn');
+  btn.classList.add('recording');
+  document.getElementById('voiceLabel').textContent='停止录音';
+  document.getElementById('voiceHint').textContent='🎙 正在聆听...';
+  try{recog.start();}catch(e){}
+}
+function stopVoice(){
+  isRec=false;
+  const btn=document.getElementById('voiceBtn');
+  btn.classList.remove('recording');
+  document.getElementById('voiceLabel').textContent='语音输入';
+  document.getElementById('voiceHint').textContent='';
+  try{recog.stop();}catch(e){}
+}
+
+/* ============ 粒子 ============ */
 const cvs=document.getElementById('fx'),ctx=cvs.getContext('2d');let parts=[];
 function resize(){cvs.width=innerWidth;cvs.height=innerHeight;}
 addEventListener('resize',resize);resize();
@@ -464,110 +744,157 @@ function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;',
 function renderHeader(){const j=job();
   document.getElementById('hLv').textContent=level();
   document.getElementById('hJob').textContent=j[1];}
-function render(){renderHeader();renderInputResult();renderToday();renderEvolve();renderMem();
-  if(S.cfg.url)document.getElementById('cfgUrl').value=S.cfg.url;
-  if(S.cfg.key)document.getElementById('cfgKey').value=S.cfg.key;
-  if(S.cfg.model)document.getElementById('cfgModel').value=S.cfg.model;}
+function render(){renderHeader();renderExamples();renderInputResult();renderToday();renderRealm();renderContrib();renderMem();}
 
 /* ============================================================
-   GSAP 入场动效引擎
-   - 苹果式节奏：轻微过冲 + 弹性阻尼，stagger 级联，克制不喧哗
-   - 性能：仅用 transform/opacity（GPU 合成层），will-change 提示，
-     移动端缩短时长；prefers-reduced-motion 与 CDN 加载失败自动降级
+   GSAP 入场动效
    ============================================================ */
 const G_OK=typeof window.gsap!=='undefined';
-if(G_OK&&window.Flip)gsap.registerPlugin(Flip);
 const MOBILE=matchMedia('(max-width:640px)').matches;
 const RM=matchMedia('(prefers-reduced-motion: reduce)').matches;
-const D=MOBILE?0.75:1;               // 移动端整体时长压缩
-const EASE_MAIN='back.out(1.5)';      // 主缓动：带过冲的阻尼感
-const EASE_SOFT='power3.out';         // 柔和缓动：用于大面积元素
+const D=MOBILE?0.75:1;
+const EASE_MAIN='back.out(1.5)';
+const EASE_SOFT='power3.out';
 
-/* 数字滚动：从 0 滚到目标值（用于统计卡片/EXP） */
 function countUp(el,to,dur=0.9){
   if(!G_OK||RM){el.textContent=to;return;}
   const o={v:0};
-  gsap.to(o,{v:to,duration:dur*D,ease:'power2.out',
-    onUpdate:()=>el.textContent=Math.round(o.v)});
+  gsap.to(o,{v:to,duration:dur*D,ease:'power2.out',onUpdate:()=>el.textContent=Math.round(o.v)});
 }
-
-/* 主页面（输入页）入场 */
 function enterInput(){
-  const tl=gsap.timeline({defaults:{ease:EASE_MAIN}});
+  const tl=gsap.timeline({defaults:{ease:EASE_MAIN},
+    onComplete:()=>gsap.set('#p-input .card, #p-input .card *, header h1, .lvl-pill',{clearProps:'all'})});
   tl.from('header h1',{y:-34,opacity:0,rotate:-4,duration:.55*D})
     .from('.lvl-pill',{scale:0,opacity:0,duration:.45*D,ease:'back.out(2.2)'},'-=.3')
     .from('#p-input > .card',{y:44,opacity:0,duration:.55*D,ease:EASE_SOFT},'-=.2')
     .from('#p-input > .card > *',{y:16,opacity:0,stagger:.06,duration:.35*D,ease:EASE_SOFT},'-=.3');
-  // 已存在目标结果卡（数据驱动渲染的节点）
   const res=renderInputResult();
   if(res&&res.length)tl.from(res,{y:36,opacity:0,scale:.96,stagger:.1,duration:.5*D,ease:EASE_SOFT},'-=.15');
 }
-
-/* 行动页（今天）入场：任务列表 stagger 弹射 */
 function enterToday(){
   const items=renderToday();
   if(!items||!items.length)return;
   gsap.from(items,{x:-40,opacity:0,scale:.97,stagger:.07,duration:.45*D,ease:EASE_MAIN,clearProps:'all'});
 }
-
-/* 个人中心（进化页）入场：头像弹跳 + 经验条充能 + 数字滚动 + 转职路线点亮 */
-function enterEvolve(){
+function enterRealm(){
   const lv=level(),need=expNeed(lv),cur=expInLevel();
   const pct=Math.min(100,cur/need*100);
   const tl=gsap.timeline({defaults:{ease:EASE_MAIN}});
-  tl.from('#p-evolve .hero',{scale:.92,opacity:0,duration:.5*D,ease:EASE_SOFT})
+  tl.from('#p-realm .hero',{scale:.92,opacity:0,duration:.5*D,ease:EASE_SOFT})
     .from('#eAvatar',{scale:0,rotate:-30,duration:.7*D,ease:'elastic.out(1,.45)'},'-=.25')
     .from('#eJob',{y:14,opacity:0,duration:.35*D},'-=.4')
     .from('.expbar',{scaleX:0,transformOrigin:'left center',duration:.4*D,ease:EASE_SOFT},'-=.2');
-  // 经验条充能（覆盖 CSS transition，避免双重动画）
   const bar=document.getElementById('eBar');
   bar.style.transition='none';bar.style.width='0%';
-  tl.to(bar,{width:pct+'%',duration:.9*D,ease:'power2.inOut',
-    onComplete:()=>{bar.style.transition='';}},'-=.1');
-  // 统计数字滚动
+  tl.to(bar,{width:pct+'%',duration:.9*D,ease:'power2.inOut',onComplete:()=>{bar.style.transition='';}},'-=.1');
   countUp(document.getElementById('sDone'),S.doneTasks);
   countUp(document.getElementById('sGoal'),S.mem.length);
   countUp(document.getElementById('sExp'),S.exp);
   tl.from('.stat',{y:22,opacity:0,stagger:.09,duration:.4*D},'-=.7')
-    .from('#p-evolve .card:nth-of-type(2)',{y:36,opacity:0,duration:.45*D,ease:EASE_SOFT},'-=.2')
+    .from('#p-realm .card:nth-of-type(2)',{y:36,opacity:0,duration:.45*D,ease:EASE_SOFT},'-=.2')
     .from('.jobpath .jp',{x:-26,opacity:0,stagger:.08,duration:.35*D,clearProps:'all'},'-=.25');
-  // 已达成节点脉冲高亮
   const curDot=document.querySelector('.jp.cur .dot');
   if(curDot)tl.fromTo(curDot,{boxShadow:'0 0 0 0 rgba(255,217,61,.9)'},
     {boxShadow:'0 0 0 10px rgba(255,217,61,0)',duration:.8,repeat:1,ease:'power2.out'},'-=.2');
 }
-
-/* 记忆页入场：卡片右侧滑入级联 */
 function enterMem(){
-  const items=renderMem();
-  if(!items||!items.length)return;
-  gsap.from(items,{x:44,opacity:0,rotate:1.5,stagger:.08,duration:.45*D,ease:EASE_MAIN,clearProps:'all'});
-}
+  const contribItems=renderContrib();
+  const memItems=renderMem();
 
-/* 入场动画路由器 */
+  // 热力图格子：从左到右逐个点亮（像 GitHub 图那种逐步激活感）
+  if(G_OK&&!RM&&contribItems&&contribItems.length){
+    const cells=document.querySelectorAll('.contrib-cell');
+    if(cells.length){
+      gsap.fromTo(cells,{opacity:0,scale:.3},
+        {opacity:1,scale:1,stagger:{each:.012,from:'start'},duration:.25*D,ease:'back.out(1.8)',clearProps:'transform'});
+    }
+    // 连续打卡徽章弹入
+    const badge=document.querySelector('.streak-badge');
+    if(badge)gsap.from(badge,{scale:0,opacity:0,duration:.4*D,delay:.3,ease:'elastic.out(1,.5)'});
+  }
+  // 记忆条目卡片入场
+  if(memItems&&memItems.length){
+    const els=document.querySelectorAll('#memBox .mem');
+    if(els.length){
+      gsap.from(els,{x:44,opacity:0,rotate:1.5,stagger:.08,duration:.45*D,ease:EASE_MAIN,clearProps:'all'});
+    }
+  }
+}
 function playEnter(pageId){
   if(!G_OK||RM)return;
   switch(pageId){
     case 'p-input': enterInput(); break;
     case 'p-today': enterToday(); break;
-    case 'p-evolve': enterEvolve(); break;
+    case 'p-realm': enterRealm(); break;
     case 'p-mem': enterMem(); break;
   }
 }
-
-/* 任务勾选时的弹性反馈（GSAP 增强版，叠加在原粒子/音效之上） */
 function popTask(el){
   if(!G_OK||RM)return;
-  gsap.fromTo(el.closest('.task'),{scale:1},
-    {scale:1.03,duration:.12,yoyo:true,repeat:1,ease:'power2.inOut',clearProps:'transform'});
+  gsap.fromTo(el.closest('.task'),{scale:1},{scale:1.03,duration:.12,yoyo:true,repeat:1,ease:'power2.inOut',clearProps:'transform'});
+}
+function expFlyFx(x,y,txt){
+  if(!G_OK||RM)return;
+  const pill=document.querySelector('.lvl-pill');
+  const pr=pill?pill.getBoundingClientRect():{left:innerWidth/2,top:20};
+  const f=document.createElement('div');
+  f.textContent=txt;
+  f.style.cssText='position:fixed;left:'+x+'px;top:'+y+'px;z-index:120;pointer-events:none;'
+    +'font-family:var(--mono);font-weight:700;font-size:13px;color:#000;'
+    +'background:var(--yellow);border:2px solid #000;padding:2px 8px;box-shadow:2px 2px 0 #000';
+  document.body.appendChild(f);
+  gsap.timeline({onComplete:()=>f.remove()})
+    .to(f,{y:-26,duration:.35,ease:'power2.out'})
+    .to(f,{x:pr.left-x+pr.width/2,y:pr.top-y,scale:.6,duration:.55,ease:'power2.in'},'-=.05')
+    .to(f,{opacity:0,duration:.15},'-=.1')
+    .fromTo(pill,{scale:1},{scale:1.15,yoyo:true,repeat:1,duration:.15,ease:'power2.inOut'},'-=.3');
 }
 
-/* ============ 启动序列 ============ */
+/* ============ 身份选择引导 ============ */
+function hideOnboard(ob){
+  ob.classList.remove('show');
+  ob.style.display='none';      // 硬保险：彻底移除遮罩，杜绝遮挡输入框
+}
+function showOnboard(){
+  const ob=document.getElementById('onboard');
+  ob.style.display='';ob.classList.add('show');
+  if(G_OK&&!RM){
+    gsap.from('.ob-title',{y:-30,opacity:0,duration:.5,ease:'power3.out'});
+    gsap.from('.ob-sub',{y:16,opacity:0,duration:.45,delay:.15,ease:'power3.out'});
+    gsap.to('.id-card',{opacity:1,x:0,duration:.55,stagger:.12,delay:.3,
+      startAt:{x:-60,opacity:0},ease:'back.out(1.4)'});
+  }else{
+    document.querySelectorAll('.id-card').forEach(c=>c.style.opacity=1);
+  }
+}
+function pickIdentity(id){
+  S.identity=id;save();
+  const ob=document.getElementById('onboard');
+  if(G_OK&&!RM){
+    gsap.to('.id-card',{opacity:0,x:40,stagger:.05,duration:.3,ease:'power2.in'});
+    gsap.to('.ob-title,.ob-sub,#obSkip',{opacity:0,duration:.3,onComplete:()=>{
+      hideOnboard(ob);
+      gsap.set('.ob-title,.ob-sub,#obSkip',{clearProps:'all'});
+      render();enterInput();
+      toast('欢迎，'+IDENTITIES[S.identity].name+' ⚡');
+      setTimeout(()=>document.getElementById('goalInput').focus(),400);
+    }});
+  }else{
+    hideOnboard(ob);render();
+    toast('欢迎，'+IDENTITIES[S.identity].name+' ⚡');
+  }
+}
+document.querySelectorAll('.id-card').forEach(card=>{
+  card.addEventListener('click',()=>pickIdentity(card.dataset.id));
+});
+document.getElementById('obSkip').addEventListener('click',()=>pickIdentity('explorer'));
+
+/* ============ 启动 ============ */
 render();
-if(G_OK&&!RM){
-  enterInput();            // 首屏：主页面入场
-}else{
-  /* GSAP CDN 加载失败 / 用户偏好减少动态：静态渲染，功能完全不受影响 */
+if(!S.identity){
+  showOnboard();            // 首次进入：先选身份
+}else if(G_OK&&!RM){
+  enterInput();
 }
 </script>
 </body>

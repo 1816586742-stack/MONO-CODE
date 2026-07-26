@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>风格选择器 — 前端设计主义展示</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Inter:wght@400;600;900&family=Noto+Sans+SC:wght@400;500;700&family=Press+Start+2P&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#1a1a1a; --muted:#6b7280; --paper:#fafaf9; --line:#e5e7eb;
+  --accent:#2454ff; --acid:#dfff00;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter','Noto Sans SC',sans-serif;background:var(--paper);color:var(--ink);padding:48px 32px 96px}
+header{max-width:1280px;margin:0 auto 48px}
+.meta{font-family:'DM Mono',monospace;font-size:12px;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);display:flex;justify-content:space-between;border-bottom:1px solid var(--line);padding-bottom:12px;margin-bottom:24px}
+h1{font-size:clamp(2.4rem,5vw,4rem);font-weight:900;letter-spacing:-.03em;line-height:1.05}
+.sub{margin-top:16px;color:var(--muted);max-width:640px;line-height:1.7;font-size:15px}
+.grid{max-width:1280px;margin:0 auto;display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:24px}
+.card{position:relative;cursor:pointer;border:1px solid var(--line);background:#fff;transition:transform .25s,box-shadow .25s;overflow:hidden}
+.card:hover{transform:translateY(-4px);box-shadow:0 12px 32px rgba(0,0,0,.08)}
+.card.selected{outline:3px solid var(--accent);outline-offset:-3px}
+.preview{height:160px;position:relative;overflow:hidden;border-bottom:1px solid var(--line)}
+.info{padding:18px 20px 20px}
+.idx{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:.1em}
+.name{font-size:17px;font-weight:700;margin:4px 0 2px}
+.en{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
+.tags{margin-top:12px;display:flex;flex-wrap:wrap;gap:6px}
+.tag{font-family:'DM Mono',monospace;font-size:10px;padding:3px 8px;border:1px solid var(--line);color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+.check{position:absolute;top:12px;right:12px;width:26px;height:26px;border-radius:50%;background:var(--accent);color:#fff;display:none;align-items:center;justify-content:center;font-size:14px;font-weight:700;z-index:5}
+.card.selected .check{display:flex}
+
+/* ============ 风格微缩预览 ============ */
+/* 1 新粗野主义 */
+.pv-brutal{background:#f4f2ec radial-gradient(circle,#d4d0c8 1px,transparent 1px);background-size:12px 12px;display:flex;align-items:center;justify-content:center}
+.pv-brutal .box{background:#fff;border:3px solid #111;box-shadow:6px 6px 0 #111;padding:10px 18px;font-family:'DM Mono',monospace;font-size:12px;font-weight:700;text-transform:uppercase}
+/* 2 瑞士 */
+.pv-swiss{background:#fafaf9;display:grid;grid-template-columns:repeat(12,1fr);gap:6px;padding:24px}
+.pv-swiss .a{grid-column:span 4;background:#1a1a1a}
+.pv-swiss .b{grid-column:span 8;border:1px solid #e5e7eb;display:flex;align-items:center;padding:0 12px;font-weight:900;font-size:20px;letter-spacing:-.02em}
+/* 3 日系 */
+.pv-jp{background:#f1f0ea;display:flex;flex-direction:column;justify-content:center;padding:28px;gap:10px}
+.pv-jp .t{font-family:'Noto Sans SC';font-size:22px;font-weight:700;display:inline-block;position:relative;width:fit-content}
+.pv-jp .t::after{content:'';position:absolute;left:0;bottom:2px;width:100%;height:8px;background:#dfff00;z-index:-1}
+.pv-jp .l{height:1px;background:#d4d3cc;width:70%}
+.pv-jp .m{font-family:'DM Mono',monospace;font-size:9px;color:#8a887f;letter-spacing:.15em;text-transform:uppercase}
+/* 4 终端 */
+.pv-term{background:#0d0f0e;padding:20px;font-family:'DM Mono',monospace;font-size:11px;color:#c5d0c0;display:flex;flex-direction:column;gap:8px;justify-content:center}
+.pv-term .st{display:flex;align-items:center;gap:8px;font-size:10px}
+.pv-term .dot{width:8px;height:8px;border-radius:50%;background:#4ade80;animation:pulse 1.4s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.pv-term .cmd{color:#dfff00}
+.pv-term .path{color:#2454ff}
+/* 5 玻璃拟态 */
+.pv-glass{background:linear-gradient(135deg,#0a0a1e,#1a0a2e 60%,#0a1a3e);display:flex;align-items:center;justify-content:center;position:relative}
+.pv-glass::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(0deg,rgba(255,255,255,.03) 0 1px,transparent 1px 3px);mix-blend-mode:overlay}
+.pv-glass .g{background:rgba(255,255,255,.08);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.15);border-radius:12px;padding:14px 22px;color:#dfff00;font-family:'DM Mono',monospace;font-size:11px}
+/* 6 体素 */
+.pv-voxel{background:#3a4a2a;display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:22px}
+.pv-voxel .v{aspect-ratio:1;background:#7B8F3A;border:2px solid #2B2B2B;box-shadow:inset 0 -6px 0 rgba(0,0,0,.35);image-rendering:pixelated}
+.pv-voxel .v:nth-child(2){background:#8B6B3D}
+.pv-voxel .v:nth-child(3){background:#6D6D6D}
+.pv-voxel .v:nth-child(4){background:#C4A87C}
+.pv-voxel .hp{grid-column:span 4;height:12px;background:#2B2B2B;border:2px solid #1a1a1a;position:relative}
+.pv-voxel .hp::after{content:'';position:absolute;inset:2px;width:60%;background:#7B8F3A}
+/* 7 新拟物 */
+.pv-neu{background:#e0e5ec;display:flex;align-items:center;justify-content:center;gap:16px}
+.pv-neu .n{width:56px;height:56px;border-radius:16px;background:#e0e5ec;box-shadow:6px 6px 12px #b8bec7,-6px -6px 12px #ffffff}
+.pv-neu .n.in{box-shadow:inset 4px 4px 8px #b8bec7,inset -4px -4px 8px #ffffff}
+/* 8 Win95 */
+.pv-w95{background:#008080;display:flex;align-items:center;justify-content:center}
+.pv-w95 .win{background:#c0c0c0;border:2px solid;border-color:#fff #555 #555 #fff;width:70%;box-shadow:2px 2px 0 rgba(0,0,0,.3)}
+.pv-w95 .tb{background:linear-gradient(90deg,#000080,#1084d0);color:#fff;font-size:10px;padding:3px 6px;font-weight:700}
+.pv-w95 .bd{padding:10px;font-size:10px;color:#111}
+.pv-w95 .btn{border:2px solid;border-color:#fff #555 #555 #fff;padding:2px 10px;display:inline-block;font-size:10px;background:#c0c0c0}
+/* 9 有机自然 */
+.pv-bio{background:#f3f0e8 radial-gradient(circle at 70% 20%,rgba(107,138,94,.18),transparent 55%);display:flex;align-items:center;justify-content:center}
+.pv-bio .c{background:#fdfbf5;border-radius:16px;padding:16px 24px;box-shadow:0 6px 20px rgba(90,106,74,.12);border-bottom:3px solid #6b8a5e;font-size:13px;color:#5a6a4a;font-weight:600}
+
+/* 10 3D超写实 */
+.pv-3d{background:linear-gradient(135deg,#e8ecf4,#c8d0e0);display:flex;align-items:center;justify-content:center;perspective:600px}
+.pv-3d .c{width:110px;height:70px;background:linear-gradient(145deg,#fff,#dfe5f0);border-radius:10px;box-shadow:0 20px 40px rgba(40,50,80,.3),0 4px 10px rgba(40,50,80,.15);transform:rotateX(12deg) rotateY(-10deg)}
+/* 11 鲜艳块状 */
+.pv-vibrant{background:#fff;display:flex;align-items:center;justify-content:center;gap:14px}
+.pv-vibrant .r{width:60px;height:60px;background:#ff6b6b;border:3px solid #111;box-shadow:4px 6px 0 #111}
+.pv-vibrant .y{width:60px;height:60px;background:#ffd93d;border:3px solid #111;box-shadow:4px 6px 0 #111}
+/* 12 OLED */
+.pv-oled{background:#000;display:flex;align-items:center;justify-content:center;gap:12px}
+.pv-oled .c{width:80px;height:56px;background:#0a0a0a;border:1px solid #1a1a1a;display:flex;align-items:center;justify-content:center}
+.pv-oled .w{background:#fff;color:#000;font-size:10px;font-weight:700;padding:5px 12px}
+/* 13 无障碍 */
+.pv-a11y{background:#fff;display:flex;align-items:center;justify-content:center;gap:12px}
+.pv-a11y .b{border:2px solid #000;padding:10px 16px;font-size:13px;font-weight:600}
+.pv-a11y .f{border:2px solid #000;padding:10px 16px;font-size:13px;outline:3px solid #2454ff;outline-offset:2px}
+/* 14 粘土 */
+.pv-clay{background:#f0c9a0;display:flex;align-items:center;justify-content:center;gap:16px}
+.pv-clay .c{width:60px;height:60px;border-radius:24px;background:#f0c9a0;box-shadow:6px 6px 12px #d4a97e,-6px -6px 12px #ffe9c2}
+/* 15 极光 */
+.pv-aurora{background:#0a0f1e radial-gradient(circle at 25% 30%,rgba(13,148,136,.5),transparent 45%),radial-gradient(circle at 75% 70%,rgba(139,92,246,.45),transparent 45%),radial-gradient(circle at 60% 20%,rgba(236,72,153,.3),transparent 40%);background-color:#0a0f1e;display:flex;align-items:center;justify-content:center}
+.pv-aurora .c{background:rgba(255,255,255,.06);backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:10px 20px;color:#5eead4;font-size:11px}
+/* 16 复古未来 */
+.pv-retro{background:#1a0a2e;display:flex;align-items:center;justify-content:center}
+.pv-retro .c{background:rgba(40,20,60,.85);border:1px solid rgba(255,107,157,.4);border-radius:10px;padding:12px 22px;color:#ff6b9d;font-size:13px;font-weight:700;text-shadow:0 0 12px rgba(255,107,157,.8);letter-spacing:.1em}
+/* 17 扁平 */
+.pv-flat{background:#f4f6f8;display:flex;align-items:center;justify-content:center;gap:12px}
+.pv-flat .c{background:#fff;border:1px solid #e2e8f0;border-radius:4px;padding:12px 18px;font-size:12px;color:#334155}
+.pv-flat .b{background:#3490dc;color:#fff;border-radius:4px;padding:12px 18px;font-size:12px;font-weight:600}
+/* 18 液态玻璃 */
+.pv-liquid{background:linear-gradient(160deg,#050510,#1a0a2e 60%,#0a0a20);display:flex;align-items:center;justify-content:center}
+.pv-liquid .c{background:rgba(255,255,255,.04);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:14px 24px;color:rgba(255,255,255,.85);font-size:11px}
+/* 19 动效驱动 */
+.pv-motion{background:#000;display:flex;align-items:center;justify-content:center}
+.pv-motion .c{border:1px solid #444;color:#fff;padding:12px 24px;font-size:12px;transition:all .35s cubic-bezier(.34,1.56,.64,1)}
+.pv-motion .c:hover{transform:scale(1.08) rotate(1.5deg);border-color:#ff4444}
+/* 20 微交互 */
+.pv-micro{background:#fff;display:flex;align-items:center;justify-content:center}
+.pv-micro .c{border:1px solid #eee;box-shadow:0 2px 6px rgba(0,0,0,.05);padding:14px 26px;font-size:12px;transition:all .25s;cursor:pointer}
+.pv-micro .c:hover{transform:translateY(-3px);box-shadow:0 8px 20px rgba(0,0,0,.1)}
+/* 21 包容性 */
+.pv-incl{background:#fff;display:flex;align-items:center;justify-content:center;gap:14px}
+.pv-incl .b{border:2px solid #000;padding:12px 20px;font-size:15px;font-weight:600}
+/* 22 零界面 */
+.pv-zero{background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px}
+.pv-zero .t{font-size:22px;font-weight:300;color:#111}
+.pv-zero .b{border:1px solid #ccc;background:transparent;padding:6px 16px;font-size:11px;color:#666}
+/* 23 柔和UI */
+.pv-soft{background:#eef0f4;display:flex;align-items:center;justify-content:center}
+.pv-soft .c{background:#fff;border:1px solid #e2e6ee;border-radius:14px;box-shadow:0 2px 4px rgba(80,90,120,.06),0 12px 24px rgba(80,90,120,.08);padding:14px 26px;font-size:12px;color:#6382dc;font-weight:600}
+/* 24 新粗野2.0 */
+.pv-neubrut{background:#fffaee;display:flex;align-items:center;justify-content:center;gap:12px}
+.pv-neubrut .c{background:#ff6b6b;border:3px solid #000;box-shadow:4px 4px 0 #000;padding:10px 18px;font-weight:700;font-size:12px}
+.pv-neubrut .y{background:#ffd93d;border:3px solid #000;box-shadow:4px 4px 0 #000;padding:10px 18px;font-weight:700;font-size:12px}
+/* 25 便当盒 */
+.pv-bento{background:#f5f5f7;display:grid;grid-template-columns:2fr 1fr;gap:8px;padding:20px}
+.pv-bento .a{background:#fff;border-radius:14px;box-shadow:0 2px 8px rgba(0,0,0,.05)}
+.pv-bento .b{background:#fff;border-radius:14px;box-shadow:0 2px 8px rgba(0,0,0,.05);display:flex;align-items:center;justify-content:center}
+.pv-bento .p{background:#1d1d1f;color:#fff;border-radius:20px;padding:5px 14px;font-size:10px}
+/* 26 Y2K */
+.pv-y2k{background:linear-gradient(135deg,#d1f7ff,#ffccde);display:flex;align-items:center;justify-content:center}
+.pv-y2k .c{background:rgba(255,255,255,.5);backdrop-filter:blur(5px);border-radius:16px;padding:12px 24px;color:#ff69b4;font-weight:700;font-size:13px;text-shadow:0 0 10px rgba(255,105,180,.5)}
+/* 27 赛博朋克 */
+.pv-cyber{background:#0a0a0a;display:flex;align-items:center;justify-content:center;gap:14px}
+.pv-cyber .m{color:#ff00ff;font-family:'DM Mono',monospace;font-size:13px;text-shadow:0 0 10px #ff00ff;border:1px solid #ff00ff;box-shadow:0 0 10px rgba(255,0,255,.5);padding:8px 14px}
+.pv-cyber .g{color:#00ff88;font-family:'DM Mono',monospace;font-size:13px;text-shadow:0 0 10px #00ff88;padding:8px 14px}
+/* 28 AI原生 */
+.pv-ai{background:#fafbff;display:flex;align-items:center;justify-content:center}
+.pv-ai .c{background:#fff;border:1px solid #c7d0f5;border-radius:12px;box-shadow:0 4px 16px rgba(102,126,234,.12);padding:14px 24px;font-size:12px;font-weight:600;background:linear-gradient(90deg,#667eea,#764ba2);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+/* 29 孟菲斯 */
+.pv-memphis{background:#fff;display:flex;align-items:center;justify-content:center;gap:10px;position:relative;overflow:hidden}
+.pv-memphis::before{content:'';position:absolute;top:10px;left:10px;width:100%;height:100%;background-image:radial-gradient(circle,#4ecdc4 2px,transparent 2px);background-size:20px 20px;opacity:.4}
+.pv-memphis .p{background:#ff6b6b;border-radius:20px;padding:8px 16px;font-size:11px;font-weight:700;box-shadow:3px 3px 0 #4ecdc4;position:relative}
+.pv-memphis .q{background:#ffe66d;border-radius:20px;padding:8px 16px;font-size:11px;font-weight:700;box-shadow:3px 3px 0 #111;position:relative}
+/* 30 蒸汽波 */
+.pv-vapor{background:linear-gradient(180deg,#1a0a3e,#2a1a4e);display:flex;align-items:center;justify-content:center}
+.pv-vapor .t{color:#e8a0ff;font-size:16px;font-weight:700;text-shadow:0 0 14px rgba(232,160,255,.9),2px 2px 0 #00ffff;letter-spacing:.15em}
+/* 31 维度层叠 */
+.pv-dim{background:#f0f0f5;display:flex;align-items:center;justify-content:center}
+.pv-dim .c{background:#fff;border:1px solid #eee;border-radius:10px;box-shadow:0 1px 2px rgba(0,0,0,.04),0 2px 4px rgba(0,0,0,.05),0 8px 16px rgba(0,0,0,.06);padding:16px 30px;font-size:12px}
+/* 32 极度极简 */
+.pv-exmin{background:#fff;display:flex;align-items:center;justify-content:center}
+.pv-exmin .t{font-size:34px;font-weight:900;letter-spacing:-.05em;border-top:1px solid #eee;padding-top:10px}
+/* 33 动态排版 */
+.pv-kinetic{background:#000;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.pv-kinetic .t{color:#fff;font-size:32px;font-weight:900;line-height:.9;letter-spacing:-.02em;text-align:center}
+/* 34 视差叙事 */
+.pv-parallax{background:linear-gradient(180deg,#f5efe4,#e8dcc8,#f5efe4);display:flex;align-items:center;justify-content:center}
+.pv-parallax .c{background:rgba(255,255,255,.75);padding:14px 26px;font-size:12px;color:#5a4632;border:1px solid rgba(90,70,50,.15)}
+/* 35 瑞士2.0 */
+.pv-swiss2{background:#fcfcfc;display:flex;align-items:center;justify-content:center}
+.pv-swiss2 .t{font-size:26px;font-weight:900;line-height:.85;border-top:2px solid #000;padding-top:12px}
+/* 36 科幻HUD */
+.pv-hud{background:#001020;display:flex;align-items:center;justify-content:center;gap:12px}
+.pv-hud .c{border:1px solid #00aaff;box-shadow:0 0 12px rgba(0,170,255,.4);color:#00aaff;font-family:'DM Mono',monospace;font-size:10px;padding:8px 14px}
+.pv-hud .d{width:10px;height:10px;border:1px solid #00aaff;transform:rotate(45deg);box-shadow:0 0 8px rgba(0,170,255,.6)}
+/* 37 便当2.0 */
+.pv-bento2{background:#f2f2f7;display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:20px}
+.pv-bento2 .a{background:#fff;border-radius:16px}
+.pv-bento2 .b{background:#fff;border-radius:16px;display:flex;align-items:center;justify-content:center}
+.pv-bento2 .r{background:#ff3b30;color:#fff;border-radius:20px;padding:5px 14px;font-size:10px;font-weight:600}
+/* 38 空间计算 */
+.pv-spatial{background:linear-gradient(150deg,#0a1030,#1a1a4e);display:flex;align-items:center;justify-content:center}
+.pv-spatial .c{background:rgba(255,255,255,.07);backdrop-filter:blur(14px);border:1px solid rgba(255,255,255,.12);border-radius:22px;padding:14px 28px;color:rgba(255,255,255,.9);font-size:11px}
+/* 39 电子墨水 */
+.pv-eink{background:#faf8f0;display:flex;flex-direction:column;justify-content:center;padding:28px;gap:8px}
+.pv-eink .t{font-family:Georgia,serif;font-size:15px;color:#2a2620;line-height:1.6}
+.pv-eink .l{height:1px;background:#ddd8c8;width:100%}
+/* 40 Z世代混沌 */
+.pv-genz{background:#111;display:flex;align-items:center;justify-content:center;gap:10px}
+.pv-genz .y{color:#ffe600;font-weight:900;font-size:14px}
+.pv-genz .o{background:#ff5c1a;border:2px solid #000;box-shadow:3px 3px 0 #ffe600;border-radius:30px;padding:8px 16px;font-size:11px;font-weight:700}
+/* 41 仿生有机2.0 */
+.pv-bio2{background:linear-gradient(180deg,#e8f0e4,#b8ccb0);display:flex;align-items:center;justify-content:center}
+.pv-bio2 .c{background:rgba(255,255,255,.5);border-radius:20px;padding:14px 26px;color:#2a4a2a;font-size:12px;font-weight:600}
+/* 42 反精致 */
+.pv-raw{background:#fff;display:flex;flex-direction:column;justify-content:center;padding:26px;gap:10px}
+.pv-raw .b{border:2px dashed #111;padding:8px 14px;font-family:'DM Mono',monospace;font-size:11px}
+.pv-raw .t{font-family:'DM Mono',monospace;font-size:10px;color:#555}
+/* 43 触觉数字 */
+.pv-tactile{background:#f8f5f0;display:flex;align-items:center;justify-content:center}
+.pv-tactile .c{background:#fff;border-radius:10px;box-shadow:0 2px 0 #d8d0c4;padding:14px 26px;font-size:12px;color:#5a4632;transition:transform .15s}
+.pv-tactile .c:active{transform:scale(.98)}
+/* 44 自然精粹 */
+.pv-nature{background:#f5f2eb;display:flex;align-items:center;justify-content:center}
+.pv-nature .c{background:#fdfbf7;padding:14px 28px;font-size:12px;color:#5a6a4a;box-shadow:0 4px 12px rgba(90,106,74,.06)}
+/* 45 光标交互 */
+.pv-cursor{background:#1a1a2e;cursor:crosshair;display:flex;align-items:center;justify-content:center}
+.pv-cursor .c{border:1px solid rgba(255,255,255,.08);box-shadow:0 0 20px rgba(100,120,255,.15);padding:14px 26px;color:#aab;font-size:11px;font-family:'DM Mono',monospace}
+/* 46 语音优先 */
+.pv-voice{background:#0a0a1a;display:flex;align-items:center;justify-content:center;gap:6px}
+.pv-voice .w{width:4px;background:#8890dd;border-radius:2px;animation:wave 1s infinite ease-in-out}
+.pv-voice .w:nth-child(1){height:12px;animation-delay:0s}
+.pv-voice .w:nth-child(2){height:24px;animation-delay:.15s}
+.pv-voice .w:nth-child(3){height:36px;animation-delay:.3s}
+.pv-voice .w:nth-child(4){height:24px;animation-delay:.45s}
+.pv-voice .w:nth-child(5){height:12px;animation-delay:.6s}
+@keyframes wave{0%,100%{transform:scaleY(.6)}50%{transform:scaleY(1)}}
+/* 47 3D产品 */
+.pv-product{background:#fafafa;display:flex;align-items:center;justify-content:center}
+.pv-product .c{width:90px;height:60px;background:#fff;border-radius:12px;box-shadow:0 12px 32px rgba(0,0,0,.14);display:flex;align-items:center;justify-content:center}
+.pv-product .i{width:36px;height:36px;background:#111;border-radius:8px}
+/* 48 渐变网格 */
+.pv-mesh{background:radial-gradient(circle at 20% 30%,rgba(236,72,153,.35),transparent 50%),radial-gradient(circle at 80% 70%,rgba(34,211,238,.35),transparent 50%),#0a0a14;display:flex;align-items:center;justify-content:center}
+.pv-mesh .c{background:rgba(255,255,255,.05);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:12px 24px;color:rgba(255,255,255,.85);font-size:11px}
+/* 49 色差RGB */
+.pv-rgb{background:#000;display:flex;align-items:center;justify-content:center}
+.pv-rgb .t{font-family:'DM Mono',monospace;color:#fff;font-size:18px;font-weight:700;text-shadow:2px 0 #f00,-2px 0 #00f;letter-spacing:.1em}
+/* 50 复古胶片 */
+.pv-film{background:#f5e8d0;display:flex;align-items:center;justify-content:center}
+.pv-film .c{background:#faf0dd;border-radius:4px;box-shadow:0 4px 12px rgba(90,60,20,.2);padding:14px 26px;font-family:Georgia,serif;font-size:13px;color:#3a2a10;border:1px solid rgba(139,105,20,.2)}
+
+/* 底部操作栏 */
+.actionbar{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--line);padding:14px 32px;display:flex;align-items:center;justify-content:space-between;z-index:10}
+.sel-info{font-family:'DM Mono',monospace;font-size:12px;color:var(--muted)}
+.sel-info b{color:var(--ink);font-size:14px}
+.btn{background:var(--ink);color:#fff;border:none;padding:12px 28px;font-size:13px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif}
+.btn:disabled{background:#c9cdd4;cursor:not-allowed}
+.btn.ghost{background:transparent;color:var(--muted);border:1px solid var(--line);margin-right:10px}
+.filterbar{max-width:1280px;margin:0 auto 32px;display:flex;gap:8px;flex-wrap:wrap}
+.fbtn{font-family:'DM Mono',monospace;font-size:11px;text-transform:uppercase;letter-spacing:.08em;padding:7px 14px;border:1px solid var(--line);background:#fff;color:var(--muted);cursor:pointer}
+.fbtn.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+@media(max-width:640px){body{padding:32px 16px 110px}.grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header>
+  <div class="meta"><span>STYLE SELECTOR / 2026.07</span><span>SRC: oasis-fvwc.upma.site/overview</span></div>
+  <h1>选择你的设计风格</h1>
+  <p class="sub">以下 50 种风格均来自目标站单页拆解。每张卡片顶部是该风格的<b>微缩实景预览</b>（用风格自身的 CSS 语言渲染），点选卡片即可标记，支持多选对比。选好後点击底部「确认风格」。</p>
+</header>
+
+<div class="filterbar" id="filterbar">
+  <button class="fbtn on" data-f="all">全部 50</button>
+  <button class="fbtn" data-f="classic">经典 9 风格</button>
+  <button class="fbtn" data-f="dark">暗色系</button>
+  <button class="fbtn" data-f="light">浅色系</button>
+  <button class="fbtn" data-f="retro">复古/怀旧</button>
+  <button class="fbtn" data-f="future">未来/科技</button>
+  <button class="fbtn" data-f="nature">自然/有机</button>
+  <button class="fbtn" data-f="bold">高冲击</button>
+</div>
+
+<div class="grid" id="grid"></div>
+
+<div class="actionbar">
+  <div class="sel-info" id="selinfo">未选择风格</div>
+  <div>
+    <button class="btn ghost" id="clearbtn">清空</button>
+    <button class="btn" id="confirmbtn" disabled>确认风格</button>
+  </div>
+</div>
+
+<script>
+const STYLES=[
+{id:1,zh:'新粗野主义',en:'Neo-Brutalism',pv:'pv-brutal',html:'<div class="box">EXP. 01</div>',tags:['classic','bold','light'],desc:'粗黑边框 · 点阵 · 硬阴影'},
+{id:2,zh:'瑞士风格',en:'Swiss Style',pv:'pv-swiss',html:'<div class="a"></div><div class="b">Aa</div>',tags:['classic','light'],desc:'12列网格 · 900字重 · 四色'},
+{id:3,zh:'日系编辑美学',en:'Japanese Editorial',pv:'pv-jp',html:'<div class="m">MAGAZINE / 2026</div><div class="t">编辑美学</div><div class="l"></div>',tags:['classic','light'],desc:'暖纸色 · 荧光黄下划线'},
+{id:4,zh:'终端/CLI 审美',en:'Terminal Aesthetic',pv:'pv-term',html:'<div class="st"><span class="dot"></span>NODE ONLINE</div><div><span class="cmd">$ run --archive</span></div><div class="path">/exp/archive_v2</div>',tags:['classic','dark','future'],desc:'黑底 · 等宽 · 脉冲圆点'},
+{id:5,zh:'玻璃拟态',en:'Glassmorphism',pv:'pv-glass',html:'<div class="g">✦ RETRO-FUTURE</div>',tags:['classic','dark','future'],desc:'毛玻璃 · CRT扫描线 · 赛博'},
+{id:6,zh:'体素美学',en:'Voxel Aesthetic',pv:'pv-voxel',html:'<div class="v"></div><div class="v"></div><div class="v"></div><div class="v"></div><div class="hp"></div>',tags:['classic','retro'],desc:'像素 · 物品栏 · HP条'},
+{id:7,zh:'新拟物化',en:'Neumorphism',pv:'pv-neu',html:'<div class="n"></div><div class="n in"></div>',tags:['classic','light'],desc:'同色浮雕 · 对向阴影'},
+{id:8,zh:'复古 Win95',en:'Retro Windows 95',pv:'pv-w95',html:'<div class="win"><div class="tb">■ SYSTEM.EXE</div><div class="bd"><span class="btn">OK</span></div></div>',tags:['classic','retro'],desc:'青绿桌面 · 3D边框'},
+{id:9,zh:'有机自然',en:'Biophilic Design',pv:'pv-bio',html:'<div class="c">Sage / 6b8a5e</div>',tags:['classic','nature','light'],desc:'大地色 · 大圆角 · 漫反射'},
+{id:10,zh:'3D 超写实',en:'3D & Hyperrealism',pv:'pv-3d',html:'<div class="c"></div>',tags:['light','future'],desc:'perspective · 多层光影'},
+{id:11,zh:'鲜艳块状',en:'Vibrant & Block-based',pv:'pv-vibrant',html:'<div class="r"></div><div class="y"></div>',tags:['bold','light'],desc:'高饱和撞色 · 硬阴影'},
+{id:12,zh:'OLED 暗黑',en:'Dark Mode OLED',pv:'pv-oled',html:'<div class="c"><span class="w">BTN</span></div>',tags:['dark'],desc:'纯黑 #000 · 反色锚点'},
+{id:13,zh:'无障碍伦理',en:'Accessible & Ethical',pv:'pv-a11y',html:'<div class="b">Button</div><div class="f">Focus</div>',tags:['light'],desc:'WCAG AA · 可见焦点'},
+{id:14,zh:'粘土风',en:'Claymorphism',pv:'pv-clay',html:'<div class="c"></div><div class="c"></div>',tags:['light'],desc:'揉圆粘土 · 暖泥土色'},
+{id:15,zh:'极光界面',en:'Aurora UI',pv:'pv-aurora',html:'<div class="c">AURORA</div>',tags:['dark','future'],desc:'多色光斑 · 毛玻璃'},
+{id:16,zh:'复古未来',en:'Retro-Futurism',pv:'pv-retro',html:'<div class="c">1986</div>',tags:['dark','retro','future'],desc:'霓虹粉 · 太空紫'},
+{id:17,zh:'扁平设计',en:'Flat Design',pv:'pv-flat',html:'<div class="c">Card</div><div class="b">Action</div>',tags:['light'],desc:'零阴影 · 品牌蓝'},
+{id:18,zh:'液态玻璃',en:'Liquid Glass',pv:'pv-liquid',html:'<div class="c">blur(20px)</div>',tags:['dark','future'],desc:'超透明 · 液体圆角'},
+{id:19,zh:'动效驱动',en:'Motion-Driven',pv:'pv-motion',html:'<div class="c">HOVER ME</div>',tags:['dark','bold'],desc:'弹簧缓动 · 色彩信号'},
+{id:20,zh:'微交互',en:'Micro-interactions',pv:'pv-micro',html:'<div class="c">200ms 缓动</div>',tags:['light'],desc:'按压缩放 · 渐进阴影'},
+{id:21,zh:'包容性设计',en:'Inclusive Design',pv:'pv-incl',html:'<div class="b">大号触摸目标</div>',tags:['light'],desc:'高对比 · 语义化'},
+{id:22,zh:'零界面',en:'Zero Interface',pv:'pv-zero',html:'<div class="t">留白即层级</div><div class="b">Confirm</div>',tags:['light'],desc:'无装饰 · 纯排版'},
+{id:23,zh:'柔和 UI 进化',en:'Soft UI Evolution',pv:'pv-soft',html:'<div class="c">Enterprise Soft</div>',tags:['light'],desc:'精致阴影 · 软垫圆角'},
+{id:24,zh:'新粗野 2.0',en:'Neubrutalism',pv:'pv-neubrut',html:'<div class="c">GEN Z</div><div class="y">友好</div>',tags:['bold','light'],desc:'奶油底 · 乐观粗野'},
+{id:25,zh:'便当盒网格',en:'Bento Box Grid',pv:'pv-bento',html:'<div class="a"></div><div class="b"><span class="p">Pill</span></div>',tags:['light'],desc:'Apple灰 · 不等大卡'},
+{id:26,zh:'Y2K 美学',en:'Y2K Aesthetic',pv:'pv-y2k',html:'<div class="c">2000.exe</div>',tags:['retro','light'],desc:'冰蓝樱花粉 · 千禧'},
+{id:27,zh:'赛博朋克',en:'Cyberpunk UI',pv:'pv-cyber',html:'<div class="m">2077</div><div class="g">//ONLINE</div>',tags:['dark','future','bold'],desc:'霓虹品红 · 发光边框'},
+{id:28,zh:'AI 原生界面',en:'AI-Native UI',pv:'pv-ai',html:'<div class="c">AI SaaS</div>',tags:['light','future'],desc:'蓝紫渐变 · 流线圆角'},
+{id:29,zh:'孟菲斯设计',en:'Memphis Design',pv:'pv-memphis',html:'<div class="p">1981</div><div class="q">MILANO</div>',tags:['bold','light','retro'],desc:'三色撞色 · 波点锯齿'},
+{id:30,zh:'蒸汽波',en:'Vaporwave',pv:'pv-vapor',html:'<div class="t">A E S T H E T I C</div>',tags:['dark','retro'],desc:'深紫 · 色彩溢出'},
+{id:31,zh:'维度层叠',en:'Dimensional Layering',pv:'pv-dim',html:'<div class="c">Z-AXIS DEPTH</div>',tags:['light'],desc:'三层递进阴影'},
+{id:32,zh:'极度极简',en:'Exaggerated Minimalism',pv:'pv-exmin',html:'<div class="t">LESS.</div>',tags:['light'],desc:'字体即设计 · 5rem'},
+{id:33,zh:'动态排版',en:'Kinetic Typography',pv:'pv-kinetic',html:'<div class="t">BIG<br>TYPE</div>',tags:['dark','bold'],desc:'文字即Hero · 0.9行高'},
+{id:34,zh:'视差叙事',en:'Parallax Storytelling',pv:'pv-parallax',html:'<div class="c">品牌叙事</div>',tags:['light','nature'],desc:'纵向渐变 · 故事书'},
+{id:35,zh:'瑞士现代 2.0',en:'Swiss Modernism 2.0',pv:'pv-swiss2',html:'<div class="t">HELVETICA</div>',tags:['light'],desc:'2px顶线 · 0.85行高'},
+{id:36,zh:'科幻 HUD',en:'HUD / Sci-Fi FUI',pv:'pv-hud',html:'<div class="c">SYS.ONLINE</div><div class="d"></div>',tags:['dark','future'],desc:'深空蓝 · 发光青'},
+{id:37,zh:'便当网格 2.0',en:'Bento Grids 2.0',pv:'pv-bento2',html:'<div class="a"></div><div class="b"><span class="r">New</span></div>',tags:['light'],desc:'暖灰 · iPhone红点缀'},
+{id:38,zh:'空间计算',en:'Spatial UI / VisionOS',pv:'pv-spatial',html:'<div class="c">visionOS Window</div>',tags:['dark','future'],desc:'22px圆角 · 空间感'},
+{id:39,zh:'电子墨水',en:'E-Ink / Paper',pv:'pv-eink',html:'<div class="t">Georgia 衬线 · 纸质阅读体验，零阴影。</div><div class="l"></div>',tags:['light'],desc:'暖白纸 · 衬线字体'},
+{id:40,zh:'Z 世代混沌',en:'Gen Z Chaos',pv:'pv-genz',html:'<div class="y">CHAOS</div><div class="o">反叛宣言</div>',tags:['dark','bold'],desc:'不完美 · 彩色交替'},
+{id:41,zh:'仿生有机 2.0',en:'Biomimetic / Organic 2.0',pv:'pv-bio2',html:'<div class="c">森林光线</div>',tags:['nature','light'],desc:'细胞壁卡片 · 深绿'},
+{id:42,zh:'反精致粗糙',en:'Anti-Polish / Raw',pv:'pv-raw',html:'<div class="b">WIREFRAME.SH</div><div class="t">// shipped as-is</div>',tags:['light'],desc:'虚线边框 · 线框上线'},
+{id:43,zh:'触觉数字',en:'Tactile Digital',pv:'pv-tactile',html:'<div class="c">按压形变</div>',tags:['light','nature'],desc:'物理厚度 · 木质触感'},
+{id:44,zh:'自然精粹',en:'Nature Distilled',pv:'pv-nature',html:'<div class="c">羊皮纸晨光</div>',tags:['nature','light'],desc:'色彩温度区分层级'},
+{id:45,zh:'光标交互',en:'Interactive Cursor',pv:'pv-cursor',html:'<div class="c">+ crosshair</div>',tags:['dark','future'],desc:'十字准星 · 光标导航'},
+{id:46,zh:'语音优先',en:'Voice-First Multimodal',pv:'pv-voice',html:'<div class="w"></div><div class="w"></div><div class="w"></div><div class="w"></div><div class="w"></div>',tags:['dark','future'],desc:'声波纹 · 视觉为辅'},
+{id:47,zh:'3D 产品展示',en:'3D Product Preview',pv:'pv-product',html:'<div class="c"><div class="i"></div></div>',tags:['light'],desc:'摄影棚无影墙'},
+{id:48,zh:'渐变网格',en:'Gradient Mesh',pv:'pv-mesh',html:'<div class="c">MESH 2.0</div>',tags:['dark','future'],desc:'多层光斑叠加'},
+{id:49,zh:'色差 RGB 分裂',en:'Chromatic Aberration',pv:'pv-rgb',html:'<div class="t">GLITCH</div>',tags:['dark','bold'],desc:'三色分离 · 光学缺陷'},
+{id:50,zh:'复古胶片',en:'Vintage Analog',pv:'pv-film',html:'<div class="c">Kodak 1968</div>',tags:['retro','light'],desc:'氧化暖黄 · 胶片颗粒'}
+];
+
+const grid=document.getElementById('grid');
+const selinfo=document.getElementById('selinfo');
+const confirmbtn=document.getElementById('confirmbtn');
+const clearbtn=document.getElementById('clearbtn');
+const selected=new Set();
+
+function render(filter){
+  grid.innerHTML='';
+  STYLES.filter(s=>filter==='all'||s.tags.includes(filter)).forEach(s=>{
+    const card=document.createElement('div');
+    card.className='card'+(selected.has(s.id)?' selected':'');
+    card.innerHTML=`
+      <div class="check">✓</div>
+      <div class="preview ${s.pv}">${s.html}</div>
+      <div class="info">
+        <div class="idx">STYLE / ${String(s.id).padStart(2,'0')}</div>
+        <div class="name">${s.zh}</div>
+        <div class="en">${s.en}</div>
+        <div style="margin-top:8px;font-size:12px;color:var(--muted)">${s.desc}</div>
+        <div class="tags">${s.tags.map(t=>'<span class="tag">'+t+'</span>').join('')}</div>
+      </div>`;
+    card.onclick=()=>{
+      selected.has(s.id)?selected.delete(s.id):selected.add(s.id);
+      card.classList.toggle('selected');
+      updateBar();
+    };
+    grid.appendChild(card);
+  });
+}
+function updateBar(){
+  if(selected.size===0){selinfo.textContent='未选择风格';confirmbtn.disabled=true;return}
+  const names=[...selected].sort((a,b)=>a-b).map(id=>STYLES.find(s=>s.id===id).zh);
+  selinfo.innerHTML='已选 <b>'+selected.size+'</b> 种：'+names.join('、');
+  confirmbtn.disabled=false;
+}
+clearbtn.onclick=()=>{selected.clear();document.querySelectorAll('.card.selected').forEach(c=>c.classList.remove('selected'));updateBar()};
+confirmbtn.onclick=()=>{
+  const list=[...selected].sort((a,b)=>a-b).map(id=>{const s=STYLES.find(x=>x.id===id);return s.id+'. '+s.zh+' ('+s.en+')'});
+  alert('已确认风格：\n\n'+list.join('\n')+'\n\n请将选择结果发回，我会基于选定风格进入设计系统定制阶段。');
+};
+document.getElementById('filterbar').addEventListener('click',e=>{
+  if(!e.target.classList.contains('fbtn'))return;
+  document.querySelectorAll('.fbtn').forEach(b=>b.classList.remove('on'));
+  e.target.classList.add('on');
+  render(e.target.dataset.f);
+});
+render('all');
+</script>
+</body>
+</html>
