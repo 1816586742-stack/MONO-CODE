@@ -44,6 +44,12 @@ textarea:focus{box-shadow:var(--sh2)}
 .eg{font-size:12px;background:var(--chip);border:2px solid var(--bd);padding:5px 10px;cursor:pointer;
   font-family:var(--mono);box-shadow:var(--sh2);transition:all .15s}
 .eg:hover{background:var(--yellow);transform:translate(-1px,-1px);box-shadow:3px 3px 0 #000}
+.tpl-label{font-size:12px;color:var(--sub);margin-top:10px;margin-bottom:4px;font-family:var(--mono)}
+.tpl-row{display:flex;flex-wrap:wrap;gap:6px}
+.tpl-chip{font-size:11px;border:2px solid var(--bd);padding:5px 10px;cursor:pointer;
+  background:#fff;font-family:var(--mono);transition:all .15s;box-shadow:var(--sh2)}
+.tpl-chip:hover{transform:translate(-1px,-1px);box-shadow:3px 3px 0 #000}
+.tpl-chip.sel{background:var(--yellow);font-weight:700;box-shadow:3px 3px 0 #000;transform:translate(-1px,-1px)}
 /* 今日 */
 .stage-tag{display:inline-block;font-size:11px;background:var(--yellow);border:2px solid var(--bd);
   color:#000;padding:2px 8px;margin-bottom:8px;font-family:var(--mono);font-weight:700;box-shadow:var(--sh2)}
@@ -225,6 +231,8 @@ canvas#fx{position:fixed;inset:0;pointer-events:none;z-index:99}
       <div class="card">
         <h3>💡 灵感输入</h3>
         <textarea id="goalInput" placeholder="写下一个真实目标，越具体越好。"></textarea>
+        <div class="tpl-label">📋 拆解模板（自动匹配）</div>
+        <div class="tpl-row" id="tplRow"></div>
         <div class="eg-row" id="egRow"></div>
         <button class="btn btn-primary" id="btnSplit" onclick="splitGoal()">⚡ 最小单元拆解</button>
         <div class="hint">方法论：目标 → 拆为最小可执行步骤 → 动手落地 → 复盘巩固 → 沉淀复利</div>
@@ -434,32 +442,105 @@ function animIcon(btn){
   }
 }
 
-/* ============ 拆解（本地模板，v1.0 无 AI） ============ */
+/* ============ 智能模板拆解系统 v1.3 ============ */
+const TEMPLATES={
+  general:{name:'通用',icon:'🎯',
+    stages:[
+      {name:'准备',tasks:[
+        {title:'明确最终验收标准，一句话写下来',verify:'能向别人说清\"做成什么样算完成\"',minutes:5},
+        {title:'核对所需工具/环境/资料是否齐全',verify:'清单逐项打勾，缺的先补齐',minutes:10}]},
+      {name:'执行',tasks:[
+        {title:'完成第一步最小动作',verify:'产生一个可见的中间结果',minutes:20},
+        {title:'推进主体工作，遇到卡点立即记录',verify:'核心部分完成，卡点已逐条记下',minutes:30},
+        {title:'收尾并自检验收标准',verify:'对照第1步的标准逐项确认',minutes:15}]},
+      {name:'沉淀',tasks:[
+        {title:'写3行复盘：卡在哪/学到什么/下次怎么更快',verify:'复盘文字不少于3行',minutes:10}]}]},
+  study:{name:'学习',icon:'📚',
+    stages:[
+      {name:'准备',tasks:[
+        {title:'浏览大纲/目录，圈出重点',verify:'知道今天要学什么，哪里是难点',minutes:5},
+        {title:'准备学习材料和环境',verify:'书/视频/笔记工具已就位，手机静音',minutes:5}]},
+      {name:'执行',tasks:[
+        {title:'分块学习第一段内容，做简要笔记',verify:'至少完成计划内容的1/3',minutes:25},
+        {title:'学习剩余内容，标注疑问点',verify:'重点内容有笔记，疑问点已标记',minutes:25},
+        {title:'用自己的话复述一遍核心概念',verify:'不看材料能说出3个要点',minutes:10}]},
+      {name:'沉淀',tasks:[
+        {title:'整理今日学习笔记，标记要复习的点',verify:'笔记有条理，3天后回来复习',minutes:10}]}]},
+  build:{name:'制作',icon:'🛠️',
+    stages:[
+      {name:'准备',tasks:[
+        {title:'列出所需工具和材料清单',verify:'清单完整，缺的已记录',minutes:5},
+        {title:'确认环境安全，腾出操作空间',verify:'桌面/地面干净，工具触手可及',minutes:5}]},
+      {name:'执行',tasks:[
+        {title:'按步骤开始操作，核心部分优先',verify:'最难的部分先动起来',minutes:25},
+        {title:'处理细节和收尾工作',verify:'主体完成，补充打磨',minutes:20},
+        {title:'测试/验证是否达到预期效果',verify:'功能正常/效果符合预期',minutes:10}]},
+      {name:'沉淀',tasks:[
+        {title:'记录操作要点和踩坑经验',verify:'下次能做更快的关键点已记下',minutes:8}]}]},
+  create:{name:'创作',icon:'✍️',
+    stages:[
+      {name:'准备',tasks:[
+        {title:'确定创作主题和核心表达',verify:'能用一句话说清要表达什么',minutes:8},
+        {title:'收集灵感素材/参考',verify:'头脑里有画面感或文字感',minutes:10}]},
+      {name:'执行',tasks:[
+        {title:'快速产出初稿，不纠结细节',verify:'先完成再完美，初稿已存在',minutes:25},
+        {title:'修改润色，精炼表达',verify:'删掉啰嗦的，强化核心的',minutes:20},
+        {title:'最终检查，确认无误',verify:'从头完整过一遍，没有明显问题',minutes:10}]},
+      {name:'沉淀',tasks:[
+        {title:'记录创作心得和下次改进点',verify:'至少记下1个创作启示',minutes:8}]}]},
+  life:{name:'生活',icon:'🏃',
+    stages:[
+      {name:'准备',tasks:[
+        {title:'明确今天要改变的一件事',verify:'具体到时间/地点/动作',minutes:3},
+        {title:'移除可能的障碍',verify:'把阻碍你执行的东西先处理掉',minutes:5}]},
+      {name:'执行',tasks:[
+        {title:'立即执行最小版本的动作',verify:'哪怕只做5分钟也算完成',minutes:5},
+        {title:'保持节奏，完成预定量',verify:'不被打断地完成计划',minutes:20}]},
+      {name:'沉淀',tasks:[
+        {title:'记录感受和明日继续的flag',verify:'今天的体验+明天的小承诺',minutes:5}]}]}
+};
+const TPL_ORDER=['general','study','build','create','life'];
+const TPL_KW={
+  study:['学','读','背','记','练','题','课','书','复习','预习','考试','英语','数学','编程'],
+  build:['做','修','装','搭','清理','整理','部署','配置','安装','拆','改','硬件','设备'],
+  create:['写','画','拍','录','创作','文章','视频','日记','设计','文案','脚本'],
+  life:['跑','走','运动','健身','早起','作息','饮食','家务','收纳','购物','做饭']
+};
+function detectTpl(goal){
+  const scores={general:1};
+  for(const[k,ws] of Object.entries(TPL_KW))
+    for(const w of ws)if(goal.includes(w))scores[k]=(scores[k]||0)+1;
+  let best='general',max=1;
+  for(const[k,v] of Object.entries(scores))if(v>max){max=v;best=k;}
+  return best;
+}
+function renderTpls(){
+  const row=document.getElementById('tplRow');
+  const cur=S.template||detectTpl(S.goal||'');
+  row.innerHTML=TPL_ORDER.map(k=>{
+    const t=TEMPLATES[k];
+    return '<span class="tpl-chip'+(k===cur?' sel':'')+'" data-tpl="'+k+'" onclick="selTpl(this)">'+t.icon+' '+t.name+'</span>';
+  }).join('');
+}
+function selTpl(el){
+  document.querySelectorAll('.tpl-chip').forEach(c=>c.classList.remove('sel'));
+  el.classList.add('sel');S.template=el.dataset.tpl;save();
+}
 function splitGoal(){
   const goal=document.getElementById('goalInput').value.trim();
   if(!goal)return toast('先写一个目标');
   if(S.goal&&S.tasks.some(t=>!t.done)){
     if(!confirm('当前目标还有未完成的任务，拆解新目标会覆盖它们。确定继续？'))return;
   }
-  const data=localSplit(goal);
-  S.goal=goal;S.tasks=[];let id=0;
-  for(const st of data.stages)for(const t of st.tasks)
-    S.tasks.push({id:++id,stage:st.name,title:t.title,verify:t.verify||'',minutes:t.minutes||15,done:false});
+  const tplKey=S.template||detectTpl(goal);
+  const tpl=TEMPLATES[tplKey]||TEMPLATES.general;
+  S.template=tplKey;S.goal=goal;S.tasks=[];let id=0;
+  for(const st of tpl.stages)for(const t of st.tasks)
+    S.tasks.push({id:++id,stage:st.name,title:t.title.replace('{goal}',goal.slice(0,16)),verify:t.verify||'',minutes:t.minutes||15,done:false});
   save();render();playEnter('p-input');
-  toast('拆解完成，去「今日」打卡');
+  toast(tpl.icon+' '+tpl.name+'模板拆解完成，去「今日」打卡');
 }
-function localSplit(goal){
-  return {stages:[
-    {name:'准备',tasks:[
-      {title:'明确最终验收标准，一句话写下来',verify:'能向别人说清"做成什么样算完成"',minutes:5},
-      {title:'核对所需工具/环境/资料是否齐全',verify:'清单逐项打勾，缺的先补齐',minutes:10}]},
-    {name:'执行',tasks:[
-      {title:'完成「'+goal.slice(0,12)+'」的第一步最小动作',verify:'产生一个可见的中间结果',minutes:20},
-      {title:'推进主体工作，遇到卡点立即记录',verify:'核心部分完成，卡点已逐条记下',minutes:30},
-      {title:'收尾并自检验收标准',verify:'对照第1步的标准逐项确认',minutes:15}]},
-    {name:'沉淀',tasks:[
-      {title:'写3行复盘：卡在哪/学到什么/下次怎么更快',verify:'复盘文字不少于3行',minutes:10}]}]};
-}
+/* ============ 智能模板拆解结束 ============ */
 function renderInputResult(){
   const box=document.getElementById('inputResult');
   if(!S.goal){box.innerHTML='';return[];}
@@ -749,7 +830,7 @@ function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;',
 function renderHeader(){const j=job();
   document.getElementById('hLv').textContent=level();
   document.getElementById('hJob').textContent=j[1];}
-function render(){renderHeader();renderExamples();renderInputResult();renderToday();renderRealm();renderContrib();renderMem();}
+function render(){renderHeader();renderTpls();renderExamples();renderInputResult();renderToday();renderRealm();renderContrib();renderMem();}
 
 /* ============================================================
    GSAP 入场动效
