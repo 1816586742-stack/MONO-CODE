@@ -126,7 +126,7 @@ MONO CODE 是开源的，但你的支持能让它走得更远：
 
 | 微信 | 支付宝 |
 |------|--------|
-| ![微信赞赏码](docs/wechat-qr.svg) | ![支付宝收款码](docs/alipay-qr.svg) |
+| ![微信赞赏码](docs/wechat-qr.png) | ![支付宝收款码](docs/alipay-qr.jpg) |
 
 > 🔄 用你的真实收款二维码替换 `docs/wechat-qr.svg` 和 `docs/alipay-qr.svg` 即可。
 
