@@ -43,7 +43,7 @@
 
 ### 预览
 
-![MONO CODE · 源进化](docs/screenshot.png)
+![MONO GROW — 游戏化自我打造系统](docs/preview.svg)
 
 ---
 

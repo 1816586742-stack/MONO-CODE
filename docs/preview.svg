@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <defs>
+    <filter id="hardShadow">
+      <feDropShadow dx="6" dy="6" stdDeviation="0" flood-color="#1A1A1A" flood-opacity="1"/>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="630" fill="#FFF8ED"/>
+
+  <!-- Decorative shapes -->
+  <circle cx="1050" cy="120" r="180" fill="#FF6B4A" opacity="0.12"/>
+  <circle cx="150" cy="500" r="140" fill="#F5C518" opacity="0.15"/>
+
+  <!-- MONO GROW badge -->
+  <rect x="80" y="80" width="220" height="56" rx="0" fill="#1A1A1A" filter="url(#hardShadow)"/>
+  <text x="190" y="117" text-anchor="middle" font-family="'Courier New', monospace" font-size="28" font-weight="bold" fill="#F5C518">MONO GROW</text>
+
+  <!-- Version tag -->
+  <rect x="320" y="80" width="100" height="56" rx="0" fill="#FF6B4A" filter="url(#hardShadow)"/>
+  <text x="370" y="117" text-anchor="middle" font-family="'Courier New', monospace" font-size="24" font-weight="bold" fill="#FFF">v1.0</text>
+
+  <!-- Main title -->
+  <text x="80" y="220" font-family="'Noto Sans SC', sans-serif" font-size="48" font-weight="bold" fill="#1A1A1A">
+    把目标拆到最小、落为行动
+  </text>
+  <text x="80" y="285" font-family="'Noto Sans SC', sans-serif" font-size="48" font-weight="bold" fill="#FF6B4A">
+    看见自己成长的具象轨迹
+  </text>
+
+  <!-- Feature pills -->
+  <rect x="80" y="340" width="180" height="48" rx="0" fill="#FFF" stroke="#1A1A1A" stroke-width="3" filter="url(#hardShadow)"/>
+  <text x="170" y="370" text-anchor="middle" font-family="'Noto Sans SC', sans-serif" font-size="18" font-weight="bold" fill="#1A1A1A">💡 灵感拆解</text>
+
+  <rect x="280" y="340" width="180" height="48" rx="0" fill="#FFF" stroke="#1A1A1A" stroke-width="3" filter="url(#hardShadow)"/>
+  <text x="370" y="370" text-anchor="middle" font-family="'Noto Sans SC', sans-serif" font-size="18" font-weight="bold" fill="#1A1A1A">✅ 打卡落地</text>
+
+  <rect x="480" y="340" width="180" height="48" rx="0" fill="#FFF" stroke="#1A1A1A" stroke-width="3" filter="url(#hardShadow)"/>
+  <text x="570" y="370" text-anchor="middle" font-family="'Noto Sans SC', sans-serif" font-size="18" font-weight="bold" fill="#1A1A1A">⬆️ 境界成长</text>
+
+  <rect x="680" y="340" width="180" height="48" rx="0" fill="#F5C518" stroke="#1A1A1A" stroke-width="3" filter="url(#hardShadow)"/>
+  <text x="770" y="370" text-anchor="middle" font-family="'Noto Sans SC', sans-serif" font-size="18" font-weight="bold" fill="#1A1A1A">🧠 复盘沉淀</text>
+
+  <!-- Bottom bar -->
+  <rect x="80" y="440" width="1040" height="4" fill="#1A1A1A"/>
+
+  <text x="80" y="500" font-family="'Noto Sans SC', sans-serif" font-size="20" fill="#666">
+    单文件 HTML · GSAP 动效 · Neubrutalism 设计 · 纯本地数据
+  </text>
+
+  <!-- Footer -->
+  <text x="80" y="560" font-family="'Noto Sans SC', sans-serif" font-size="16" fill="#999">
+    开源 · CC BY-NC 4.0 · 数量不稀释纯度，不落地才稀释纯度
+  </text>
+  <text x="1060" y="560" text-anchor="end" font-family="'Courier New', monospace" font-size="14" fill="#CCC">1816586742-stack/MONO-CODE</text>
+</svg>
