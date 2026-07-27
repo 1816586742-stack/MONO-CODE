@@ -79,7 +79,7 @@
 ## 项目结构
 
 ```
-eros-evolve/
+mono-grow/
 ├── index.html              # v1.0 主程序
 ├── README.md
 ├── LICENSE                 # CC BY-NC 4.0
@@ -92,11 +92,10 @@ eros-evolve/
 
 ## 路线图
 
-- [x] v1.0 · 源进化纯净版（本地拆解 + 身份选择 + 五阶转职 + 即时复盘语音输入）
+- [x] v1.0 · 纯净版（本地拆解 + 身份选择 + 五阶转职 + 即时复盘语音输入）
 - [ ] v1.1 · 灵魂 IP 形象页（成长显影：技能层/感悟层/场景层）
 - [ ] v1.2 · 数据导出 / 备份 / 迁移
-- [ ] v2.0 · Muse AI 伴侣接入（MONO CODE 品牌人格化引导）
-- [ ] v3.0 · 多用户 / 社区原思维共享
+- [ ] v2.0 · 自定义拆解模板 + 社区原思维共享
 
 ---
 
@@ -127,7 +126,9 @@ MONO CODE 是开源的，但你的支持能让它走得更远：
 
 | 微信 | 支付宝 |
 |------|--------|
-| ![微信赞赏码](docs/wechat-qr.png) | ![支付宝收款码](docs/alipay-qr.png) |
+| ![微信赞赏码](docs/wechat-qr.svg) | ![支付宝收款码](docs/alipay-qr.svg) |
+
+> 🔄 用你的真实收款二维码替换 `docs/wechat-qr.svg` 和 `docs/alipay-qr.svg` 即可。
 
 ---
 
@@ -152,7 +153,7 @@ MONO CODE 是开源的，但你的支持能让它走得更远：
 
 <div align="center">
 
-**MONO CODE · 源进化** — 看见自己，从最小行动开始
+**MONO GROW** — 看见自己，从最小行动开始
 
 [⭐ Star](https://github.com/1816586742-stack/MONO-CODE) · [🍴 Fork](https://github.com/1816586742-stack/MONO-CODE/fork)
 
