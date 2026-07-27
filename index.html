@@ -225,7 +225,6 @@ canvas#fx{position:fixed;inset:0;pointer-events:none;z-index:99}
       <div class="card">
         <h3>💡 灵感输入</h3>
         <textarea id="goalInput" placeholder="写下一个真实目标，越具体越好。"></textarea>
-        <div class="eg-row" id="egRow"></div>
         <button class="btn btn-primary" id="btnSplit" onclick="splitGoal()">⚡ 最小单元拆解</button>
         <div class="hint">方法论：目标 → 拆为最小可执行步骤 → 动手落地 → 复盘巩固 → 沉淀复利</div>
       </div>
@@ -826,7 +825,7 @@ function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;',
 function renderHeader(){const j=job();
   document.getElementById('hLv').textContent=level();
   document.getElementById('hJob').textContent=j[1];}
-function render(){renderHeader();renderExamples();renderToday();renderRealm();renderContrib();renderMem();}
+function render(){renderHeader();renderToday();renderRealm();renderContrib();renderMem();}
 
 /* ============================================================
    GSAP 入场动效
