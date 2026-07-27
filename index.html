@@ -154,6 +154,15 @@ textarea:focus{box-shadow:var(--sh2)}
 .contrib-label{font-size:9px;color:#bbb;text-align:center;min-width:13px;margin-top:2px;font-family:var(--mono)}
 .contrib-legend{display:flex;align-items:center;gap:4px;font-size:10px;color:var(--sub);margin-top:8px;font-family:var(--mono)}
 .contrib-legend span{width:13px;height:13px;border-radius:2px;flex-shrink:0}
+.contrib-cell.has-mem{cursor:pointer;position:relative}
+.contrib-cell.has-mem::after{content:'';position:absolute;bottom:1px;right:1px;width:4px;height:4px;border-radius:50%;background:var(--text);opacity:.5}
+.mem-toast{position:absolute;z-index:20;pointer-events:none;opacity:0;
+  background:#fff;border:3px solid var(--bd);box-shadow:var(--sh);padding:10px 12px;min-width:160px;max-width:240px}
+.mem-toast-inner{font-size:12px;line-height:1.6}
+.mt-item{padding:4px 0;font-family:var(--sans)}
+.mt-item b{display:block;font-size:13px;color:var(--text);margin-bottom:2px}
+.mt-item span{display:block;font-size:11px;color:var(--sub);line-height:1.4}
+.mt-item+.mt-item{border-top:1px solid #eee;margin-top:2px;padding-top:6px}
 .weekday-labels{display:flex;flex-direction:column;gap:3px;margin-right:4px;flex-shrink:0}
 .weekday-labels span{width:13px;height:13px;font-size:8px;color:#ccc;text-align:center;line-height:13px;font-family:var(--mono)}
 .contrib-scroll{display:flex;align-items:flex-start}
@@ -607,9 +616,21 @@ function renderContrib(){
   const end=new Date();end.setHours(23,59,59,999);
   const start=new Date(end);start.setDate(end.getDate()-83);
   start.setHours(0,0,0,0);
-  // 对齐到周一
   const dow=start.getDay();const off=dow===0?6:dow-1;
   start.setDate(start.getDate()-off);
+
+  // 构建日期→记忆索引
+  const memIdx={};
+  S.mem.forEach(m=>{
+    try{
+      const d=new Date(m.date);
+      if(!isNaN(d.getTime())){
+        const k=d.toISOString().slice(0,10);
+        if(!memIdx[k])memIdx[k]=[];
+        memIdx[k].push(m);
+      }
+    }catch(e){}
+  });
 
   const weeks=[];
   let cur=new Date(start);
@@ -618,43 +639,38 @@ function renderContrib(){
     for(let d=0;d<7;d++){
       const ds=cur.toISOString().slice(0,10);
       const n=S.dailyActivity[ds]||0;
-      col.push({date:ds,count:n,isToday:ds===today});
+      const mems=memIdx[ds]||[];
+      col.push({date:ds,count:n,isToday:ds===today,mems});
       cur.setDate(cur.getDate()+1);
     }
     weeks.push(col);
   }
 
-  // 颜色阶梯：0=灰 1=浅黄 2-3=黄 4-5=橙 6+=红
   function cellColor(n){
     if(n===0)return'#f0f0f0';if(n===1)return'#fff3d6';
     if(n<=3)return'#ffd93d';if(n<=5)return'#ff9f43';return'#ff6b6b';
   }
 
-  let h='<h4>🔥 行动足迹 <span style="font-size:12px;font-weight:400;color:var(--sub)">（最近12周）</span></h4>';
+  let h='<h4>🔥 行动足迹 <span style="font-size:12px;font-weight:400;color:var(--sub)">（悬停查看笔记）</span></h4>';
   h+='<div class="contrib-meta">';
-  const sd=streakDays();
-  const totalDays=Object.keys(S.dailyActivity).length;
+  const sd=streakDays();const totalDays=Object.keys(S.dailyActivity).length;
   h+='<span class="streak-badge">🔥 连续 '+sd+' 天</span>';
   h+='<span style="color:var(--sub)">共 '+totalDays+' 个活跃日</span>';
-  h+='<span style="color:var(--sub)">'+S.mem.length+' 个归档目标</span>';
+  h+='<span style="color:var(--sub)">'+S.mem.length+' 条记忆</span>';
   h+='</div>';
 
-  h+='<div class="contrib-scroll"><div class="weekday-labels">';
-  // 周几标签（只显示 一三五日）
+  // 浮动记忆层
+  h+='<div style="position:relative"><div class="contrib-scroll"><div class="weekday-labels">';
   const wdLabels=['一','','三','','五','','日'];
   wdLabels.forEach(l=>h+='<span>'+(l||'')+'</span>');
   h+='</div><div class="contrib-grid">';
 
-  // 月份标签行
   const months=[];
   weeks.forEach((col,i)=>{
     const firstDate=col[0].date;
     const mon=firstDate.slice(5,7);
-    if(!months.length||months[months.length-1].mon!==mon){
-      months.push({mon,idx:i});
-    }
+    if(!months.length||months[months.length-1].mon!==mon)months.push({mon,idx:i});
   });
-  // 月份行
   h+='<div class="contrib-col" style="margin-right:2px">';
   for(let i=0;i<weeks.length;i++){
     const m=months.find(m=>m.idx===i);
@@ -665,22 +681,72 @@ function renderContrib(){
   weeks.forEach(col=>{
     h+='<div class="contrib-col">';
     col.forEach(c=>{
-      h+='<div class="contrib-cell'+(c.isToday?' today':'')+'" style="background:'+cellColor(c.count)+
-        '" title="'+c.date+' · '+c.count+'次行动"></div>';
+      const hasMem=c.mems.length>0;
+      h+='<div class="contrib-cell'+(c.isToday?' today':'')+(hasMem?' has-mem':'')+
+        '" style="background:'+cellColor(c.count)+
+        '" data-date="'+c.date+'" data-count="'+c.count+'" data-mems="'+esc(JSON.stringify(c.mems.map(m=>({goal:m.goal,note:m.note,thought:m.thought}))))+'"></div>';
     });
     h+='</div>';
   });
   h+='</div></div>';
 
-  // 颜色图例
+  // 浮动笔记层
+  h+='<div class="mem-toast" id="memToast"><div class="mem-toast-inner"></div></div></div>';
+
   h+='<div class="contrib-legend">少 ';
   [0,1,3,5,7].forEach(n=>h+='<span style="background:'+cellColor(n)+'"></span>');
   h+=' 多</div>';
 
   wrap.innerHTML=h;
+
+  // 绑定悬停事件
+  wrap.querySelectorAll('.contrib-cell').forEach(cell=>{
+    const memsRaw=cell.dataset.mems;
+    if(!memsRaw||memsRaw==='[]')return;
+    const mems=JSON.parse(memsRaw);
+    const toastEl=wrap.querySelector('#memToast');
+    const inner=toastEl.querySelector('.mem-toast-inner');
+
+    cell.addEventListener('mouseenter',()=>{
+      const rect=cell.getBoundingClientRect();
+      const wrapRect=wrap.getBoundingClientRect();
+      let left=rect.left-wrapRect.left+12;
+      let top=rect.top-wrapRect.top-8;
+      // 防止溢出
+      if(left+220>wrapRect.width)left=wrapRect.width-230;
+      if(top+80>wrapRect.height)top=rect.top-wrapRect.top-100;
+
+      inner.innerHTML=mems.map(m=>{
+        const preview=m.note&&m.note!=='（未写复盘）'?m.note.slice(0,60):(m.thought?m.thought.slice(0,60):'');
+        return '<div class="mt-item"><b>'+esc(m.goal.slice(0,14))+'</b>'+(preview?'<span>'+esc(preview)+(preview.length>=60?'...':'')+'</span>':'')+'</div>';
+      }).join('');
+
+      if(G_OK&&!RM){
+        gsap.killTweensOf(toastEl);
+        gsap.set(toastEl,{left,top});
+        gsap.fromTo(toastEl,{opacity:0,scale:.9},{opacity:1,scale:1,duration:.2,ease:'power2.out'});
+      }else{
+        toastEl.style.left=left+'px';toastEl.style.top=top+'px';toastEl.style.opacity='1';
+      }
+    });
+
+    cell.addEventListener('mouseleave',()=>{
+      if(G_OK&&!RM){
+        gsap.to(toastEl,{opacity:0,scale:.9,duration:.15,ease:'power2.in'});
+      }else{toastEl.style.opacity='0';}
+    });
+  });
+
   // 自动滚动到本周
   setTimeout(()=>{const s=wrap.querySelector('.contrib-scroll');if(s)s.scrollLeft=s.scrollWidth;},50);
-  return Array.from(wrap.children);
+}
+
+/* 日期记忆查询（供外部使用） */
+function getDateMemories(isoDate){
+  return S.mem.filter(m=>{
+    try{const d=new Date(m.date);return !isNaN(d.getTime())&&d.toISOString().slice(0,10)===isoDate;}
+    catch(e){return false;}
+  });
 }
 
 function renderMem(){
