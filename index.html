@@ -317,6 +317,7 @@ canvas#fx{position:fixed;inset:0;pointer-events:none;z-index:99}
     <div class="hint" style="margin:0 0 10px">复盘方法论：卡在哪？学到什么？下次怎么更快？感想将沉淀为你的「原思维」雏形。</div>
     <textarea id="reviewNote" placeholder="🛠 复盘：例：清灰时螺丝刀型号不对卡了10分钟，下次先核对工具清单"></textarea>
     <textarea id="reviewThought" style="margin-top:8px;min-height:70px" placeholder="💭 感想：做完这件事，你对自己有了什么新认识？（例：原来我真的可以独立拆机，手比想象中稳）"></textarea>
+    <input id="reviewTags" style="width:100%;border:2px solid var(--bd);padding:8px 12px;font-size:13px;margin-top:8px;font-family:var(--mono)" placeholder="🏷 掌握了什么技能？（用逗号分隔，如：拆机、写代码、英语口语）">
     <button class="btn btn-primary" onclick="archiveGoal()">📦 归档入库（+50 修为）</button>
   </div>
 </div>
@@ -552,8 +553,11 @@ function checkTask(id,el){
     const r=el.getBoundingClientRect();
     burst(r.left+10,r.top+10);popTask(el);
     expFlyFx(r.left+10,r.top+10,'+'+taskExp(t)+' 修为');
-    const l0=level();save();
+    const l0=level();save();const streak=streakDays();
     if(level()>l0){setTimeout(()=>{burst(innerWidth/2,innerHeight/3,60);toast('🎉 境界提升！Lv.'+level()+' · '+job()[1]);},300);}
+    else if([7,14,30,60,100].includes(streak)){
+      setTimeout(()=>{burst(innerWidth/2,innerHeight/2,100);toast('🔥 连续 '+streak+' 天打卡！你正在持续进化');},400);
+    }
   }else{S.exp-=taskExp(t);S.doneTasks--;}
   save();renderHeader();renderToday();
 }
@@ -561,8 +565,13 @@ function openReview(){document.getElementById('reviewMask').classList.add('show'
 function archiveGoal(){
   const note=document.getElementById('reviewNote').value.trim();
   const thought=document.getElementById('reviewThought').value.trim();
+  const tagsRaw=(document.getElementById('reviewTags')||{}).value||'';
+  const tags=tagsRaw.trim()?tagsRaw.split(/[,，、\s]+/).filter(t=>t):[];
   S.mem.unshift({goal:S.goal,date:new Date().toLocaleString('zh-CN'),
-    tasks:S.tasks.length,note:note||'（未写复盘）',thought:thought||''});
+    tasks:S.tasks.length,note:note||'（未写复盘）',thought:thought||'',tags});
+  // 积累技能标签
+  S.skillTags=S.skillTags||{};
+  tags.forEach(t=>{const k=t.toLowerCase();S.skillTags[k]=(S.skillTags[k]||0)+1;});
   S.exp+=50;S.goal=null;S.tasks=[];
   trackToday();
   document.getElementById('reviewNote').value='';
@@ -670,13 +679,29 @@ function renderContrib(){
   h+=' 多</div>';
 
   wrap.innerHTML=h;
+  // 自动滚动到本周
+  setTimeout(()=>{const s=wrap.querySelector('.contrib-scroll');if(s)s.scrollLeft=s.scrollWidth;},50);
   return Array.from(wrap.children);
 }
 
 function renderMem(){
   const box=document.getElementById('memBox');
   if(!S.mem.length){box.innerHTML='<div class="empty">记忆库还是空的<br>完成一个目标并复盘归档，开始复利 🧠<br><br><span style="font-size:12px;color:var(--sub)">👆 点击「即时复盘」用文字或语音记录</span></div>';return Array.from(box.children);}
-  box.innerHTML=S.mem.map((m,i)=>{
+
+  // 技能标签云
+  let tagsHtml='';
+  if(S.skillTags&&Object.keys(S.skillTags).length){
+    const entries=Object.entries(S.skillTags).sort((a,b)=>b[1]-a[1]).slice(0,12);
+    tagsHtml='<div class="card" style="margin-bottom:10px"><h3 style="margin-bottom:8px">🏷 已掌握的技能</h3><div style="display:flex;flex-wrap:wrap;gap:6px">';
+    entries.forEach(([tag,n])=>{
+      const size=n>5?14:n>3?13:12;
+      const bg=n>5?'var(--yellow)':n>2?'var(--chip)':'#f5f5f5';
+      tagsHtml+='<span style="font-size:'+size+'px;background:'+bg+';border:2px solid var(--bd);padding:2px 8px;font-family:var(--mono);box-shadow:var(--sh2)">'+esc(tag)+' ×'+n+'</span>';
+    });
+    tagsHtml+='</div></div>';
+  }
+
+  box.innerHTML=tagsHtml+S.mem.map((m,i)=>{
     const isBlank=!m.note||m.note==='（未写复盘）';
     const n=isBlank
       ?'<div class="m-note editable" onclick="expandEdit('+i+')" title="点击编辑">✏️ 点击写下复盘...</div>'
@@ -688,6 +713,7 @@ function renderMem(){
       +'<button class="btn btn-ghost" onclick="saveEdit('+i+')" style="margin-top:4px;padding:6px 12px;font-size:12px">💾 保存</button></div>'
       +n
       +(m.thought?'<div class="m-thought">💭 '+esc(m.thought)+'</div>':'')
+      +(m.tags&&m.tags.length?'<div style="margin-top:6px;display:flex;flex-wrap:wrap;gap:4px">'+m.tags.map(t=>'<span style="font-size:10px;background:var(--chip);border:1px solid var(--bd);padding:1px 6px;font-family:var(--mono)">'+esc(t)+'</span>').join('')+'</div>':'')
       +'</div>';
   }).join('');
   return Array.from(box.children);
