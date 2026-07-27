@@ -61,6 +61,8 @@ textarea:focus{box-shadow:var(--sh2)}
 .t-meta{font-size:12px;color:var(--sub);margin-top:4px;font-family:var(--mono)}
 .t-verify{font-size:12px;color:var(--ok);margin-top:4px;font-weight:600}
 .t-exp{margin-left:auto;flex-shrink:0;font-size:12px;font-weight:700;color:var(--red);align-self:center;font-family:var(--mono)}
+.search-btn{opacity:.35;transition:opacity .2s;font-size:15px;align-self:center;padding:4px 6px;flex-shrink:0;text-decoration:none;line-height:1}
+.search-btn:hover{opacity:.8}
 /* 境界 */
 .hero{text-align:center;padding:26px 16px;position:relative}
 .avatar-wrap{position:relative;display:inline-block}
@@ -241,6 +243,7 @@ canvas#fx{position:fixed;inset:0;pointer-events:none;z-index:99}
 
     <!-- 今日 -->
     <section class="page" id="p-today">
+      <div id="energyBar"></div>
       <div id="todayBox"></div>
     </section>
 
@@ -330,13 +333,23 @@ canvas#fx{position:fixed;inset:0;pointer-events:none;z-index:99}
   </div>
 </div>
 
+<!-- 每日精力评估 -->
+<div class="modal-mask" id="energyMask" role="dialog" aria-modal="true" aria-label="每日精力评估">
+  <div class="modal" style="text-align:center">
+    <div style="font-size:48px;margin-bottom:8px" id="energyEmoji">⚡</div>
+    <h3>今日精力如何？</h3>
+    <div class="hint" style="margin:8px 0 16px">选一个最接近的状态，帮你合理安排今天</div>
+    <div id="energyOpts" style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap"></div>
+  </div>
+</div>
+
 <script>
 /* ============ 数据层 ============ */
 const KEY='sourcevolve_v1';
 let S=load();
 function load(){
   try{const d=JSON.parse(localStorage.getItem(KEY));if(d)return d;}catch(e){}
-  return {exp:0,doneTasks:0,goal:null,tasks:[],mem:[],identity:null,dailyActivity:{}};
+  return {exp:0,doneTasks:0,goal:null,tasks:[],mem:[],identity:null,dailyActivity:{},energy:0,energyDate:''};
 }
 function save(){localStorage.setItem(KEY,JSON.stringify(S));}
 
@@ -362,6 +375,69 @@ function level(){let l=1,e=S.exp;while(e>=expNeed(l)){e-=expNeed(l);l++;}return 
 function expNeed(l){return 100+(l-1)*50;}
 function expInLevel(){let l=1,e=S.exp;while(e>=expNeed(l)){e-=expNeed(l);l++;}return e;}
 function job(){const l=level();let j=JOBS[0];for(const x of JOBS)if(l>=x[0])j=x;return j;}
+
+/* ============ 每日精力变量系统（Spoon Theory + Eat The Frog） ============ */
+const ENERGY_LEVELS=[
+  {min:80,emoji:'🔋',label:'精力充沛',color:'#4A8F6E',bg:'#e8f7ee',mindset:'今天适合攻克最难的事——先吃掉那只青蛙！',strategy:'hardFirst'},
+  {min:60,emoji:'⚡',label:'状态良好',color:'#6B9DFC',bg:'#e8f0fe',mindset:'按计划稳步推进，保持节奏就是胜利',strategy:'normal'},
+  {min:40,emoji:'🔸',label:'精力一般',color:'#E8A838',bg:'#fef7e8',mindset:'聚焦最重要的1-2件事，其余随缘',strategy:'coreFirst'},
+  {min:20,emoji:'🔹',label:'需要充电',color:'#D4956A',bg:'#fdf0e8',mindset:'只做简单的小行动，允许自己今天慢一点',strategy:'easyFirst'},
+  {min:0,emoji:'🪫',label:'几乎耗尽',color:'#FF6B6B',bg:'#ffe8e8',mindset:'今天就做一件事，做完就好好夸自己',strategy:'minimal'},
+];
+function energyLevel(v){
+  for(const l of ENERGY_LEVELS)if(v>=l.min)return l;
+  return ENERGY_LEVELS[ENERGY_LEVELS.length-1];
+}
+function refreshEnergy(){
+  const today=new Date().toISOString().slice(0,10);
+  if(S.energyDate!==today){S.energy=0;S.energyDate=today;save();}
+}
+function showEnergyCheck(){
+  const today=new Date().toISOString().slice(0,10);
+  if(S.energyDate===today&&S.energy>0)return;
+  const opts=[{v:100,emoji:'🔋',label:'充满电'},{v:75,emoji:'⚡',label:'还不错'},{v:50,emoji:'🔸',label:'一般般'},{v:25,emoji:'🔹',label:'有点累'},{v:10,emoji:'🪫',label:'需要休息'}];
+  document.getElementById('energyOpts').innerHTML=opts.map(o=>
+    '<button class="btn btn-ghost" style="flex-direction:column;padding:12px 16px;gap:4px;min-width:72px" onclick="setEnergy('+o.v+')"><span style="font-size:28px">'+o.emoji+'</span><span style="font-size:11px">'+o.label+'</span></button>'
+  ).join('');
+  document.getElementById('energyMask').classList.add('show');
+}
+function setEnergy(v){
+  S.energy=v;S.energyDate=new Date().toISOString().slice(0,10);save();
+  document.getElementById('energyMask').classList.remove('show');
+  const lv=energyLevel(v);
+  toast(lv.emoji+' '+lv.label+' · '+lv.mindset);
+  renderToday();renderEnergyBar();
+}
+document.getElementById('energyMask').addEventListener('click',e=>{
+  if(e.target.id==='energyMask')e.target.classList.remove('show');});
+
+function renderEnergyBar(){
+  const bar=document.getElementById('energyBar');
+  refreshEnergy();
+  if(!S.goal||!S.tasks.length){bar.innerHTML='';return;}
+  const lv=energyLevel(S.energy||50);
+  const pct=S.energy||50;
+  bar.innerHTML='<div class="card" style="padding:10px 14px;margin-bottom:10px;background:'+lv.bg+'">'+
+    '<div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">'+
+    '<span style="font-size:22px">'+lv.emoji+'</span>'+
+    '<span style="font-weight:900;font-size:14px;color:'+lv.color+'">'+lv.label+' · '+pct+'%</span>'+
+    '</div>'+
+    '<div style="font-size:12px;color:var(--text);line-height:1.5">💡 '+lv.mindset+'</div>'+
+    '<div style="height:5px;background:rgba(0,0,0,.1);border-radius:2px;margin-top:8px">'+
+    '<div style="height:100%;width:'+pct+'%;background:'+lv.color+';border-radius:2px;transition:width .5s"></div></div></div>';
+}
+
+function getTaskWeight(minutes){return minutes<=10?1:minutes<=20?2:minutes<=30?3:4;}
+function sortTasksByEnergy(){
+  if(!S.tasks.length)return;
+  const lv=energyLevel(S.energy||50);
+  if(lv.strategy==='hardFirst')S.tasks.sort((a,b)=>getTaskWeight(b.minutes)-getTaskWeight(a.minutes));
+  else if(lv.strategy==='easyFirst'||lv.strategy==='minimal')S.tasks.sort((a,b)=>getTaskWeight(a.minutes)-getTaskWeight(b.minutes));
+  // coreFirst: keep original order (template order is good)
+  // normal: keep original order
+  save();renderToday();
+}
+/* ============ 精力系统结束 ============ */
 
 /* ============ 身份体系 ============ */
 const IDENTITIES={
@@ -526,7 +602,7 @@ function splitGoal(){
   S.template=tplKey;S.goal=goal;S.tasks=[];let id=0;
   for(const st of tpl.stages)for(const t of st.tasks)
     S.tasks.push({id:++id,stage:st.name,title:t.title.replace('{goal}',goal.slice(0,16)),verify:t.verify||'',minutes:t.minutes||15,done:false});
-  save();render();go(document.querySelectorAll('nav button')[1]);
+  save();sortTasksByEnergy();render();go(document.querySelectorAll('nav button')[1]);
   toast('✅ 已拆解为 '+S.tasks.length+' 个最小行动');
 }
 /* ============ 今日 ============ */
@@ -541,10 +617,12 @@ function renderToday(){
     if(t.stage!==lastStage){h+='<div class="stage-tag">'+esc(t.stage)+'</div>';lastStage=t.stage;}
     h+='<label class="task'+(t.done?' done':'')+'">'
       +'<input type="checkbox" '+(t.done?'checked':'')+' onchange="checkTask('+t.id+',this)">'
-      +'<div><div class="t-title">'+esc(t.title)+'</div>'
+      +'<div style="flex:1"><div class="t-title">'+esc(t.title)+'</div>'
       +'<div class="t-meta">⏱ 约'+t.minutes+'分钟</div>'
       +(t.verify?'<div class="t-verify">✓ 验证：'+esc(t.verify)+'</div>':'')
-      +'</div><div class="t-exp">+'+taskExp(t)+'</div></label>';
+      +'</div>'
+      +'<a href="https://www.google.com/search?q='+encodeURIComponent(t.title)+'" target="_blank" rel="noopener" class="search-btn" title="深度搜索：'+esc(t.title)+'" onclick="event.stopPropagation()" style="text-decoration:none;font-size:14px;align-self:center;padding:4px 6px;opacity:.5;flex-shrink:0">🔍</a>'
+      +'<div class="t-exp">+'+taskExp(t)+'</div></label>';
   }
   if(doneN===S.tasks.length&&S.tasks.length>0)
     h+='<button class="btn btn-primary" onclick="openReview()">🎉 全部落地 · 复盘归档</button>';
@@ -891,7 +969,7 @@ function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;',
 function renderHeader(){const j=job();
   document.getElementById('hLv').textContent=level();
   document.getElementById('hJob').textContent=j[1];}
-function render(){renderHeader();renderToday();renderRealm();renderContrib();renderMem();}
+function render(){renderHeader();renderEnergyBar();renderToday();renderRealm();renderContrib();renderMem();}
 
 /* ============================================================
    GSAP 入场动效
@@ -1024,6 +1102,7 @@ function pickIdentity(id){
       gsap.set('.ob-title,.ob-sub,#obSkip',{clearProps:'all'});
       render();enterInput();
       toast('欢迎，'+IDENTITIES[S.identity].name+' ⚡');
+      showEnergyCheck();       // 身份确认后评估精力
       setTimeout(()=>document.getElementById('goalInput').focus(),400);
     }});
   }else{
@@ -1038,10 +1117,12 @@ document.getElementById('obSkip').addEventListener('click',()=>pickIdentity('exp
 
 /* ============ 启动 ============ */
 render();
+refreshEnergy();
 if(!S.identity){
   showOnboard();            // 首次进入：先选身份
-}else if(G_OK&&!RM){
-  enterInput();
+}else{
+  showEnergyCheck();         // 每日精力评估
+  if(G_OK&&!RM)enterInput();
 }
 </script>
 </body>
