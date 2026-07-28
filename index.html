@@ -689,12 +689,12 @@ function renderContrib(){
   h+=' 多</div>';
 
   // 成长概览融合在热力图内
-  const l=level(),j=job(),cur=expInLevel(),need=expNeed(l);
+  const rl=level(),rj=job(),rc=expInLevel(),rn=expNeed(rl);
   const doneToday=Object.values(S.dailyActivity).slice(-1)[0]||0;
   h+='<div style="margin-top:12px;padding-top:10px;border-top:1px solid #eee;display:flex;gap:12px;flex-wrap:wrap">';
   h+='<div style="flex:1;min-width:70px;text-align:center;padding:6px;background:'+cellColor(S.doneTasks)+';border:1px solid var(--bd)"><div style="font-size:18px;font-weight:900;color:var(--text)">'+S.doneTasks+'</div><div style="font-size:9px;color:var(--sub);font-family:var(--mono)">落地行动</div></div>';
   h+='<div style="flex:1;min-width:70px;text-align:center;padding:6px;background:#fff3d6;border:1px solid var(--bd)"><div style="font-size:18px;font-weight:900;color:var(--text)">'+S.mem.length+'</div><div style="font-size:9px;color:var(--sub);font-family:var(--mono)">归档目标</div></div>';
-  h+='<div style="flex:1;min-width:70px;text-align:center;padding:6px;background:#fff;border:1px solid var(--bd)"><div style="font-size:18px">'+j[2]+'</div><div style="font-size:9px;color:var(--sub);font-family:var(--mono)">Lv.'+l+' '+j[1]+'</div></div>';
+  h+='<div style="flex:1;min-width:70px;text-align:center;padding:6px;background:#fff;border:1px solid var(--bd)"><div style="font-size:18px">'+rj[2]+'</div><div style="font-size:9px;color:var(--sub);font-family:var(--mono)">Lv.'+rl+' '+rj[1]+'</div></div>';
   h+='</div>';
   h+='<div style="margin-top:8px;font-size:10px;color:var(--sub);font-family:var(--mono);display:flex;gap:12px;flex-wrap:wrap">';
   h+='<span>⚡ '+S.exp+'总修为</span><span>🏃 今日'+doneToday+'次</span><span>🔥 连续'+streakDays()+'天</span>';
