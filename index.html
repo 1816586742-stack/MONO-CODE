@@ -26,6 +26,8 @@ header h1{font-size:20px;font-weight:900;color:#000;box-shadow:inset 0 -9px 0 va
 main{flex:1;overflow-y:auto;padding:0 16px 90px}
 .page{display:none}
 .page.active{display:block}
+#p-input.page.active{display:flex;flex-direction:column;justify-content:center;min-height:100%}
+#p-input .card:first-child{margin-top:auto;margin-bottom:auto;max-width:480px;align-self:center;width:100%}
 .card{background:var(--card);border:3px solid var(--bd);padding:16px;margin-bottom:14px;box-shadow:var(--sh)}
 .card h3{font-size:14px;font-weight:900;margin-bottom:10px;display:flex;align-items:center;gap:6px}
 textarea{width:100%;border:2px solid var(--bd);padding:10px 12px;font-size:14px;font-family:var(--sans);
@@ -993,6 +995,10 @@ render();
 refreshEnergy();
 showEnergyCheck();         // 每日精力评估
 if(G_OK&&!RM)enterInput();
+// Enter 键拆解（Shift+Enter 换行）
+document.getElementById('goalInput').addEventListener('keydown',e=>{
+  if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();splitGoal();}
+});
 </script>
 </body>
 </html>
