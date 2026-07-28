@@ -156,8 +156,6 @@ textarea:focus{box-shadow:var(--sh2)}
 .contrib-cell:hover{transform:scale(1.4);z-index:2;border-color:var(--bd)}
 .contrib-cell.today{border-color:var(--bd);border-width:2px}
 .contrib-label{font-size:9px;color:#bbb;text-align:center;min-width:13px;margin-top:2px;font-family:var(--mono)}
-.contrib-legend{display:flex;align-items:center;gap:4px;font-size:10px;color:var(--sub);margin-top:8px;font-family:var(--mono)}
-.contrib-legend span{width:13px;height:13px;border-radius:2px;flex-shrink:0}
 .contrib-cell.has-mem{cursor:pointer;position:relative}
 .contrib-cell.has-mem::after{content:'';position:absolute;bottom:1px;right:1px;width:4px;height:4px;border-radius:50%;background:var(--text);opacity:.5}
 .mem-toast{position:absolute;z-index:20;pointer-events:none;opacity:0;
@@ -672,10 +670,6 @@ function renderContrib(){
 
   // 浮动笔记层
   h+='<div class="mem-toast" id="memToast"><div class="mem-toast-inner"></div></div></div>';
-
-  h+='<div class="contrib-legend">少 ';
-  [0,1,3,5,7].forEach(n=>h+='<span style="background:'+cellColor(n)+'"></span>');
-  h+=' 多</div>';
 
   // 成长概览融合在热力图内
   const rl=level(),rj=job(),rc=expInLevel(),rn=expNeed(rl);
