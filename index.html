@@ -147,6 +147,8 @@ textarea:focus{box-shadow:var(--sh2)}
 .contrib-meta{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:12px;font-size:12px;font-family:var(--mono)}
 .streak-badge{background:var(--yellow);border:2px solid var(--bd);padding:2px 8px;font-weight:700;box-shadow:var(--sh2);
   white-space:nowrap;display:inline-flex;align-items:center;gap:4px}
+.stats-box{border:3px solid var(--bd);background:#fff;padding:14px;margin-bottom:14px;box-shadow:var(--sh)}
+.stats-box h4{font-size:14px;font-weight:900;margin-bottom:10px}
 .contrib-grid{display:flex;gap:3px;overflow-x:auto;padding-bottom:4px;-webkit-overflow-scrolling:touch}
 .contrib-col{display:flex;flex-direction:column;gap:3px;flex-shrink:0}
 .contrib-cell{width:13px;height:13px;border-radius:2px;background:#f0f0f0;border:1px solid #e0e0e0;position:relative;
@@ -212,19 +214,6 @@ canvas#fx{position:fixed;inset:0;pointer-events:none;z-index:99}
 <canvas id="fx"></canvas>
 <div class="toast" id="toast" role="alert"></div>
 
-<!-- 首次进入：身份选择 -->
-<div class="onboard" id="onboard">
-  <div class="ob-box">
-    <div class="ob-title">你是谁？</div>
-    <div class="ob-sub">选择一个身份，源进化会按你的处境<br>给出贴合的灵感与拆解思路</div>
-    <button class="id-card" data-id="student"><span class="ic">🎒</span><span><div class="nm">学生</div><div class="ds">在课业之外，亲手做成一些真实的事</div></span><span class="ar">→</span></button>
-    <button class="id-card" data-id="maker"><span class="ic">🛠️</span><span><div class="nm">制作者</div><div class="ds">折腾项目、部署、拆机，把想法变成系统</div></span><span class="ar">→</span></button>
-    <button class="id-card" data-id="creator"><span class="ic">🎬</span><span><div class="nm">创作者</div><div class="ds">写作、视频、内容，让作品被看见</div></span><span class="ar">→</span></button>
-    <button class="id-card" data-id="explorer"><span class="ic">🧭</span><span><div class="nm">探索者</div><div class="ds">不设框架，自定义你的一切</div></span><span class="ar">→</span></button>
-    <div style="text-align:center;margin-top:8px"><span id="obSkip" style="color:#8a91a3;font-size:12px;cursor:pointer;text-decoration:underline;font-family:var(--mono)">先随便看看 →</span></div>
-  </div>
-</div>
-
 <div id="app">
   <header>
     <h1>⚡ MONO CODE</h1>
@@ -247,38 +236,18 @@ canvas#fx{position:fixed;inset:0;pointer-events:none;z-index:99}
       <div id="todayBox"></div>
     </section>
 
-    <!-- 境界 -->
-    <section class="page" id="p-realm">
-      <div class="card hero">
-        <div class="avatar-wrap"><div class="avatar-ring"></div><div class="avatar" id="eAvatar">🌱</div></div>
-        <div class="job" id="eJob">初醒</div>
-        <div class="lv">境界 Lv.<span id="eLv">1</span></div>
-        <div class="expbar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" aria-label="修为进度"><i id="eBar" style="width:0%"></i></div>
-        <div class="expnum" id="eExp">0 / 100 修为</div>
-        <div class="stat-row">
-          <div class="stat"><b id="sDone">0</b><span>落地行动</span></div>
-          <div class="stat"><b id="sGoal">0</b><span>归档目标</span></div>
-          <div class="stat"><b id="sExp">0</b><span>总修为</span></div>
-        </div>
-      </div>
-      <div class="card">
-        <h3>🛤️ 境界之路</h3>
-        <div class="jobpath" id="jobPath"></div>
-      </div>
-    </section>
-
     <!-- 记忆 -->
     <section class="page" id="p-mem">
       <div class="card" style="display:flex;justify-content:space-between;align-items:center">
         <h3 style="margin:0">🧠 记忆库 · 复利沉淀</h3>
         <div>
-          <button class="btn btn-ghost" onclick="reIdentity()">换身份</button>
           <button class="btn btn-danger" onclick="exportData()" style="background:#fff;color:var(--sub);border-color:var(--sub);box-shadow:2px 2px 0 var(--sub);font-size:11px;padding:5px 10px">📤 导出</button>
           <button class="btn btn-danger" onclick="resetAll()" style="background:#fff;color:var(--red);border-color:var(--red);box-shadow:2px 2px 0 var(--red);font-size:11px;padding:5px 10px">🔄 重置</button>
         </div>
       </div>
       <!-- 贡献热力图 -->
       <div class="contrib-wrap" id="contribWrap"></div>
+      <div class="stats-box" id="statsBox"></div>
       <!-- 即时捕捉卡 -->
       <div class="quick-cap" id="quickCap">
         <h4><span class="dot-pulse"></span> 即时复盘 · 把今天的事刻进原思维</h4>
@@ -309,10 +278,6 @@ canvas#fx{position:fixed;inset:0;pointer-events:none;z-index:99}
       <rect x="3.5" y="3.5" width="17" height="17" rx="2"/>
       <polyline class="ck" points="7.5 12.5 10.5 15.5 16.5 8.5"/>
     </svg></span>To-Do</button>
-    <button data-p="p-realm" onclick="go(this)" aria-label="境界页面"><span class="ico"><svg viewBox="0 0 24 24" aria-hidden="true">
-      <path d="M4 20 L9.5 8 L13.5 14 L16.5 9 L21 20 Z"/>
-      <circle cx="17.5" cy="4.5" r="1.6"/>
-    </svg></span>境界</button>
     <button data-p="p-mem" onclick="go(this)" aria-label="记忆页面"><span class="ico"><svg viewBox="0 0 24 24" aria-hidden="true">
       <path d="M12 3 3 8l9 5 9-5-9-5z"/>
       <path d="M3 13l9 5 9-5"/>
@@ -439,24 +404,6 @@ function sortTasksByEnergy(){
 }
 /* ============ 精力系统结束 ============ */
 
-/* ============ 身份体系 ============ */
-const IDENTITIES={
-  student:{name:'学生',examples:['背完九九乘法表的一行','预习明天要学的两页课本','做半页配套练习册自检','背 10 个英语单词','把错题本补上今天的一道题','整理好自己的书包和书桌']},
-  maker:{name:'制作者',examples:['修好家里一个失灵的小物件','整理电脑桌面和文件夹','学会一个软件的新功能','给手机清理存储空间','跟着教程拼一个小东西','写 20 行解决小问题的小脚本']},
-  creator:{name:'创作者',examples:['写 300 字今天的日记','拍出 3 张自己满意的照片','录一段 1 分钟的语音随笔','画一幅小涂鸦','整理自己的灵感收集箱','读完一篇好文章并摘抄三句']},
-  explorer:{name:'探索者',examples:['学会做一道新菜','出门走满 3000 步','整理房间的一个角落','读完一本书的 30 页','给家人做一件小事','认识一种路边的新植物']}
-};
-function renderExamples(){
-  const row=document.getElementById('egRow');
-  const idt=S.identity?IDENTITIES[S.identity]:null;
-  if(!idt){row.innerHTML='';return;}
-  row.innerHTML=idt.examples.map(e=>'<span class="eg" tabindex="0" onclick="fillEg(this)" onkeydown="if(event.key===\'Enter\')fillEg(this)">'+e+'</span>').join('');
-}
-function fillEg(el){
-  document.getElementById('goalInput').value=el.textContent;
-  document.getElementById('goalInput').focus();
-}
-
 /* ============ 导航 ============ */
 function go(btn){
   document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));
@@ -508,9 +455,6 @@ function animIcon(btn){
       {strokeDashoffset:0,duration:.45,ease:'power2.out'});
     gsap.fromTo(svg.querySelector('rect'),{scale:.9,transformOrigin:'12px 12px'},
       {scale:1,duration:.3,ease:'back.out(2)'});
-  }else if(p==='p-realm'){
-    // 山峰向上跃起
-    gsap.fromTo(svg,{y:3},{y:-3,duration:.28,ease:'power2.out',yoyo:true,repeat:1});
   }else if(p==='p-mem'){
     // 记忆层叠：三层依次脉冲
     const layers=svg.querySelectorAll('path');
@@ -670,23 +614,38 @@ document.getElementById('reviewMask').addEventListener('click',e=>{
   if(e.target.id==='reviewMask')e.target.classList.remove('show');});
 
 /* ============ 境界/记忆 ============ */
-function renderRealm(){
+function renderStats(){
+  const el=document.getElementById('statsBox');
   const l=level(),j=job();
-  document.getElementById('eAvatar').textContent=j[2];
-  document.getElementById('eJob').textContent=j[1];
-  document.getElementById('eLv').textContent=l;
   const cur=expInLevel(),need=expNeed(l);
-  document.getElementById('eBar').style.width=Math.min(100,cur/need*100)+'%';
-  document.getElementById('eBar').parentElement.setAttribute('aria-valuenow',Math.round(Math.min(100,cur/need*100)));
-  document.getElementById('eExp').textContent=cur+' / '+need+' 修为';
-  document.getElementById('sDone').textContent=S.doneTasks;
-  document.getElementById('sGoal').textContent=S.mem.length;
-  document.getElementById('sExp').textContent=S.exp;
-  document.getElementById('jobPath').innerHTML=JOBS.map(x=>{
-    const st=l>=x[0]?'cur':'lock';
-    return '<div class="jp '+st+'"><span class="dot"></span>'+x[2]+' <b>'+x[1]+'</b><span style="margin-left:auto;font-size:12px;color:var(--sub)">Lv.'+x[0]+(st==='cur'?' · 已达成':'')+'</span></div>';
-  }).join('');
+  const doneToday=Object.values(S.dailyActivity).slice(-1)[0]||0;
+  let h='<h4 style="margin-bottom:10px">📊 成长概览</h4>';
+  h+='<div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:10px">';
+  h+='<div style="flex:1;min-width:80px;text-align:center;padding:8px;background:#fff;border:2px solid var(--bd);box-shadow:var(--sh2)">';
+  h+='<div style="font-size:22px;font-weight:900;color:var(--red)">'+S.doneTasks+'</div>';
+  h+='<div style="font-size:10px;color:var(--sub);font-family:var(--mono)">落地行动</div></div>';
+  h+='<div style="flex:1;min-width:80px;text-align:center;padding:8px;background:#fff;border:2px solid var(--bd);box-shadow:var(--sh2)">';
+  h+='<div style="font-size:22px;font-weight:900;color:var(--yellow)">'+S.mem.length+'</div>';
+  h+='<div style="font-size:10px;color:var(--sub);font-family:var(--mono)">归档目标</div></div>';
+  h+='<div style="flex:1;min-width:80px;text-align:center;padding:8px;background:#fff;border:2px solid var(--bd);box-shadow:var(--sh2)">';
+  h+='<div style="font-size:22px;font-weight:900;">'+j[2]+'</div>';
+  h+='<div style="font-size:10px;color:var(--sub);font-family:var(--mono)">Lv.'+l+' '+j[1]+'</div></div>';
+  h+='</div>';
+  // Exp bar
+  h+='<div style="margin-top:8px">';
+  h+='<div style="display:flex;justify-content:space-between;font-size:11px;color:var(--sub);font-family:var(--mono);margin-bottom:2px">';
+  h+='<span>修为</span><span>'+cur+' / '+need+'</span></div>';
+  h+='<div style="height:8px;background:#f0f0f0;border:1px solid var(--bd);border-radius:4px;overflow:hidden">';
+  h+='<div style="height:100%;width:'+Math.min(100,cur/need*100)+'%;background:repeating-linear-gradient(45deg,var(--red) 0 6px,var(--yellow) 6px 12px);background-size:16px 16px;transition:width .5s;border-radius:3px"></div></div></div>';
+  // Today's quick actions
+  h+='<div style="margin-top:12px;font-size:11px;color:var(--sub);font-family:var(--mono)">';
+  h+='🏃 今日已完成：'+(doneToday||0)+' 次行动 · ';
+  h+='🔥 连续 '+streakDays()+' 天 · ';
+  h+='📦 共 '+S.exp+' 总修为';
+  h+='</div>';
+  el.innerHTML=h;
 }
+/* ============ 境界页已移除，统计数据移至记忆页 ============ */
 function renderContrib(){
   const wrap=document.getElementById('contribWrap');
   const today=new Date().toISOString().slice(0,10);
@@ -845,37 +804,15 @@ function renderMem(){
   }
 
   box.innerHTML=tagsHtml+S.mem.map((m,i)=>{
-    const isBlank=!m.note||m.note==='（未写复盘）';
-    const n=isBlank
-      ?'<div class="m-note editable" onclick="expandEdit('+i+')" title="点击编辑">✏️ 点击写下复盘...</div>'
-      :'<div class="m-note">'+esc(m.note)+'</div>';
-    const eid='mEdit'+i;
+    const hasNote=m.note&&m.note!=='（未写复盘）';
     return '<div class="mem"><div class="m-goal">'+esc(m.goal)+'</div>'
       +'<div class="m-date">'+m.date+' · '+m.tasks+'个行动</div>'
-      +'<div class="edit-inline" id="'+eid+'"><textarea id="mEditTA'+i+'" style="min-height:60px">'+(isBlank?'':esc(m.note))+'</textarea>'
-      +'<button class="btn btn-ghost" onclick="saveEdit('+i+')" style="margin-top:4px;padding:6px 12px;font-size:12px">💾 保存</button></div>'
-      +n
+      +(hasNote?'<div class="m-note">'+esc(m.note)+'</div>':'')
       +(m.thought?'<div class="m-thought">💭 '+esc(m.thought)+'</div>':'')
       +(m.tags&&m.tags.length?'<div style="margin-top:6px;display:flex;flex-wrap:wrap;gap:4px">'+m.tags.map(t=>'<span style="font-size:10px;background:var(--chip);border:1px solid var(--bd);padding:1px 6px;font-family:var(--mono)">'+esc(t)+'</span>').join('')+'</div>':'')
       +'</div>';
   }).join('');
   return Array.from(box.children);
-}
-function expandEdit(i){
-  const eid='mEdit'+i;
-  document.getElementById(eid).classList.add('show');
-  const ta=document.getElementById('mEditTA'+i);
-  ta.focus();
-  // 入场动效
-  if(G_OK&&!RM){
-    gsap.fromTo('#'+eid,{height:0,opacity:0},{height:'auto',opacity:1,duration:.35,ease:'power2.out'});
-  }
-}
-function saveEdit(i){
-  const ta=document.getElementById('mEditTA'+i);
-  S.mem[i].note=ta.value.trim()||'（未写复盘）';
-  save();render();playEnter('p-mem');
-  toast('✅ 复盘已保存');
 }
 function resetAll(){
   if(!confirm('确定清空所有数据？修为、行动、记忆库都会丢失。'))return;
@@ -887,8 +824,6 @@ function exportData(){
   a.download='eros-backup-'+new Date().toISOString().slice(0,10)+'.json';a.click();
   toast('📤 数据已导出');
 }
-function reIdentity(){S.identity=null;save();showOnboard();}
-
 /* ============ 即时捕捉 ============ */
 function capSave(){
   const note=document.getElementById('capNote').value.trim();
@@ -969,7 +904,7 @@ function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;',
 function renderHeader(){const j=job();
   document.getElementById('hLv').textContent=level();
   document.getElementById('hJob').textContent=j[1];}
-function render(){renderHeader();renderEnergyBar();renderToday();renderRealm();renderContrib();renderMem();}
+function render(){renderHeader();renderEnergyBar();renderToday();renderContrib();renderStats();renderMem();}
 
 /* ============================================================
    GSAP 入场动效
@@ -1001,27 +936,6 @@ function enterToday(){
   if(!items||!items.length)return;
   gsap.from(items,{x:-40,opacity:0,scale:.97,stagger:.07,duration:.45*D,ease:EASE_MAIN,clearProps:'all'});
 }
-function enterRealm(){
-  const lv=level(),need=expNeed(lv),cur=expInLevel();
-  const pct=Math.min(100,cur/need*100);
-  const tl=gsap.timeline({defaults:{ease:EASE_MAIN}});
-  tl.from('#p-realm .hero',{scale:.92,opacity:0,duration:.5*D,ease:EASE_SOFT})
-    .from('#eAvatar',{scale:0,rotate:-30,duration:.7*D,ease:'elastic.out(1,.45)'},'-=.25')
-    .from('#eJob',{y:14,opacity:0,duration:.35*D},'-=.4')
-    .from('.expbar',{scaleX:0,transformOrigin:'left center',duration:.4*D,ease:EASE_SOFT},'-=.2');
-  const bar=document.getElementById('eBar');
-  bar.style.transition='none';bar.style.width='0%';
-  tl.to(bar,{width:pct+'%',duration:.9*D,ease:'power2.inOut',onComplete:()=>{bar.style.transition='';}},'-=.1');
-  countUp(document.getElementById('sDone'),S.doneTasks);
-  countUp(document.getElementById('sGoal'),S.mem.length);
-  countUp(document.getElementById('sExp'),S.exp);
-  tl.from('.stat',{y:22,opacity:0,stagger:.09,duration:.4*D},'-=.7')
-    .from('#p-realm .card:nth-of-type(2)',{y:36,opacity:0,duration:.45*D,ease:EASE_SOFT},'-=.2')
-    .from('.jobpath .jp',{x:-26,opacity:0,stagger:.08,duration:.35*D,clearProps:'all'},'-=.25');
-  const curDot=document.querySelector('.jp.cur .dot');
-  if(curDot)tl.fromTo(curDot,{boxShadow:'0 0 0 0 rgba(255,217,61,.9)'},
-    {boxShadow:'0 0 0 10px rgba(255,217,61,0)',duration:.8,repeat:1,ease:'power2.out'},'-=.2');
-}
 function enterMem(){
   const contribItems=renderContrib();
   const memItems=renderMem();
@@ -1050,7 +964,6 @@ function playEnter(pageId){
   switch(pageId){
     case 'p-input': enterInput(); break;
     case 'p-today': enterToday(); break;
-    case 'p-realm': enterRealm(); break;
     case 'p-mem': enterMem(); break;
   }
 }
@@ -1075,55 +988,11 @@ function expFlyFx(x,y,txt){
     .fromTo(pill,{scale:1},{scale:1.15,yoyo:true,repeat:1,duration:.15,ease:'power2.inOut'},'-=.3');
 }
 
-/* ============ 身份选择引导 ============ */
-function hideOnboard(ob){
-  ob.classList.remove('show');
-  ob.style.display='none';      // 硬保险：彻底移除遮罩，杜绝遮挡输入框
-}
-function showOnboard(){
-  const ob=document.getElementById('onboard');
-  ob.style.display='';ob.classList.add('show');
-  if(G_OK&&!RM){
-    gsap.from('.ob-title',{y:-30,opacity:0,duration:.5,ease:'power3.out'});
-    gsap.from('.ob-sub',{y:16,opacity:0,duration:.45,delay:.15,ease:'power3.out'});
-    gsap.to('.id-card',{opacity:1,x:0,duration:.55,stagger:.12,delay:.3,
-      startAt:{x:-60,opacity:0},ease:'back.out(1.4)'});
-  }else{
-    document.querySelectorAll('.id-card').forEach(c=>c.style.opacity=1);
-  }
-}
-function pickIdentity(id){
-  S.identity=id;save();
-  const ob=document.getElementById('onboard');
-  if(G_OK&&!RM){
-    gsap.to('.id-card',{opacity:0,x:40,stagger:.05,duration:.3,ease:'power2.in'});
-    gsap.to('.ob-title,.ob-sub,#obSkip',{opacity:0,duration:.3,onComplete:()=>{
-      hideOnboard(ob);
-      gsap.set('.ob-title,.ob-sub,#obSkip',{clearProps:'all'});
-      render();enterInput();
-      toast('欢迎，'+IDENTITIES[S.identity].name+' ⚡');
-      showEnergyCheck();       // 身份确认后评估精力
-      setTimeout(()=>document.getElementById('goalInput').focus(),400);
-    }});
-  }else{
-    hideOnboard(ob);render();
-    toast('欢迎，'+IDENTITIES[S.identity].name+' ⚡');
-  }
-}
-document.querySelectorAll('.id-card').forEach(card=>{
-  card.addEventListener('click',()=>pickIdentity(card.dataset.id));
-});
-document.getElementById('obSkip').addEventListener('click',()=>pickIdentity('explorer'));
-
 /* ============ 启动 ============ */
 render();
 refreshEnergy();
-if(!S.identity){
-  showOnboard();            // 首次进入：先选身份
-}else{
-  showEnergyCheck();         // 每日精力评估
-  if(G_OK&&!RM)enterInput();
-}
+showEnergyCheck();         // 每日精力评估
+if(G_OK&&!RM)enterInput();
 </script>
 </body>
 </html>
