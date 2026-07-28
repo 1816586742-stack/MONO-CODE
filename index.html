@@ -149,8 +149,6 @@ textarea:focus{box-shadow:var(--sh2)}
 .contrib-meta{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:12px;font-size:12px;font-family:var(--mono)}
 .streak-badge{background:var(--yellow);border:2px solid var(--bd);padding:2px 8px;font-weight:700;box-shadow:var(--sh2);
   white-space:nowrap;display:inline-flex;align-items:center;gap:4px}
-.stats-box{border:3px solid var(--bd);background:#fff;padding:14px;margin-bottom:14px;box-shadow:var(--sh)}
-.stats-box h4{font-size:14px;font-weight:900;margin-bottom:10px}
 .contrib-grid{display:flex;gap:3px;overflow-x:auto;padding-bottom:4px;-webkit-overflow-scrolling:touch}
 .contrib-col{display:flex;flex-direction:column;gap:3px;flex-shrink:0}
 .contrib-cell{width:13px;height:13px;border-radius:2px;background:#f0f0f0;border:1px solid #e0e0e0;position:relative;
@@ -249,19 +247,6 @@ canvas#fx{position:fixed;inset:0;pointer-events:none;z-index:99}
       </div>
       <!-- 贡献热力图 -->
       <div class="contrib-wrap" id="contribWrap"></div>
-      <div class="stats-box" id="statsBox"></div>
-      <!-- 即时捕捉卡 -->
-      <div class="quick-cap" id="quickCap">
-        <h4><span class="dot-pulse"></span> 即时复盘 · 把今天的事刻进原思维</h4>
-        <textarea id="capNote" placeholder="刚刚做完的事，有什么想对自己说的？（卡在哪 / 学到什么 / 下次怎么更快）"></textarea>
-        <div class="cap-bar">
-          <button class="btn btn-primary" style="width:auto;margin:0;padding:8px 16px;font-size:13px" onclick="capSave()">⚡ 沉淀入库</button>
-          <button class="voice-btn" id="voiceBtn" onclick="toggleVoice()">
-            <span class="mic-dot"></span> <span id="voiceLabel">语音输入</span>
-          </button>
-          <span style="font-size:11px;color:var(--sub);font-family:var(--mono)" id="voiceHint"></span>
-        </div>
-      </div>
       <div id="memBox"></div>
     </section>
   </main>
@@ -615,39 +600,6 @@ function archiveGoal(){
 document.getElementById('reviewMask').addEventListener('click',e=>{
   if(e.target.id==='reviewMask')e.target.classList.remove('show');});
 
-/* ============ 境界/记忆 ============ */
-function renderStats(){
-  const el=document.getElementById('statsBox');
-  const l=level(),j=job();
-  const cur=expInLevel(),need=expNeed(l);
-  const doneToday=Object.values(S.dailyActivity).slice(-1)[0]||0;
-  let h='<h4 style="margin-bottom:10px">📊 成长概览</h4>';
-  h+='<div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:10px">';
-  h+='<div style="flex:1;min-width:80px;text-align:center;padding:8px;background:#fff;border:2px solid var(--bd);box-shadow:var(--sh2)">';
-  h+='<div style="font-size:22px;font-weight:900;color:var(--red)">'+S.doneTasks+'</div>';
-  h+='<div style="font-size:10px;color:var(--sub);font-family:var(--mono)">落地行动</div></div>';
-  h+='<div style="flex:1;min-width:80px;text-align:center;padding:8px;background:#fff;border:2px solid var(--bd);box-shadow:var(--sh2)">';
-  h+='<div style="font-size:22px;font-weight:900;color:var(--yellow)">'+S.mem.length+'</div>';
-  h+='<div style="font-size:10px;color:var(--sub);font-family:var(--mono)">归档目标</div></div>';
-  h+='<div style="flex:1;min-width:80px;text-align:center;padding:8px;background:#fff;border:2px solid var(--bd);box-shadow:var(--sh2)">';
-  h+='<div style="font-size:22px;font-weight:900;">'+j[2]+'</div>';
-  h+='<div style="font-size:10px;color:var(--sub);font-family:var(--mono)">Lv.'+l+' '+j[1]+'</div></div>';
-  h+='</div>';
-  // Exp bar
-  h+='<div style="margin-top:8px">';
-  h+='<div style="display:flex;justify-content:space-between;font-size:11px;color:var(--sub);font-family:var(--mono);margin-bottom:2px">';
-  h+='<span>修为</span><span>'+cur+' / '+need+'</span></div>';
-  h+='<div style="height:8px;background:#f0f0f0;border:1px solid var(--bd);border-radius:4px;overflow:hidden">';
-  h+='<div style="height:100%;width:'+Math.min(100,cur/need*100)+'%;background:repeating-linear-gradient(45deg,var(--red) 0 6px,var(--yellow) 6px 12px);background-size:16px 16px;transition:width .5s;border-radius:3px"></div></div></div>';
-  // Today's quick actions
-  h+='<div style="margin-top:12px;font-size:11px;color:var(--sub);font-family:var(--mono)">';
-  h+='🏃 今日已完成：'+(doneToday||0)+' 次行动 · ';
-  h+='🔥 连续 '+streakDays()+' 天 · ';
-  h+='📦 共 '+S.exp+' 总修为';
-  h+='</div>';
-  el.innerHTML=h;
-}
-/* ============ 境界页已移除，统计数据移至记忆页 ============ */
 function renderContrib(){
   const wrap=document.getElementById('contribWrap');
   const today=new Date().toISOString().slice(0,10);
@@ -736,6 +688,18 @@ function renderContrib(){
   [0,1,3,5,7].forEach(n=>h+='<span style="background:'+cellColor(n)+'"></span>');
   h+=' 多</div>';
 
+  // 成长概览融合在热力图内
+  const l=level(),j=job(),cur=expInLevel(),need=expNeed(l);
+  const doneToday=Object.values(S.dailyActivity).slice(-1)[0]||0;
+  h+='<div style="margin-top:12px;padding-top:10px;border-top:1px solid #eee;display:flex;gap:12px;flex-wrap:wrap">';
+  h+='<div style="flex:1;min-width:70px;text-align:center;padding:6px;background:'+cellColor(S.doneTasks)+';border:1px solid var(--bd)"><div style="font-size:18px;font-weight:900;color:var(--text)">'+S.doneTasks+'</div><div style="font-size:9px;color:var(--sub);font-family:var(--mono)">落地行动</div></div>';
+  h+='<div style="flex:1;min-width:70px;text-align:center;padding:6px;background:#fff3d6;border:1px solid var(--bd)"><div style="font-size:18px;font-weight:900;color:var(--text)">'+S.mem.length+'</div><div style="font-size:9px;color:var(--sub);font-family:var(--mono)">归档目标</div></div>';
+  h+='<div style="flex:1;min-width:70px;text-align:center;padding:6px;background:#fff;border:1px solid var(--bd)"><div style="font-size:18px">'+j[2]+'</div><div style="font-size:9px;color:var(--sub);font-family:var(--mono)">Lv.'+l+' '+j[1]+'</div></div>';
+  h+='</div>';
+  h+='<div style="margin-top:8px;font-size:10px;color:var(--sub);font-family:var(--mono);display:flex;gap:12px;flex-wrap:wrap">';
+  h+='<span>⚡ '+S.exp+'总修为</span><span>🏃 今日'+doneToday+'次</span><span>🔥 连续'+streakDays()+'天</span>';
+  h+='</div>';
+
   wrap.innerHTML=h;
 
   // 绑定悬停事件
@@ -790,7 +754,7 @@ function getDateMemories(isoDate){
 
 function renderMem(){
   const box=document.getElementById('memBox');
-  if(!S.mem.length){box.innerHTML='<div class="empty">记忆库还是空的<br>完成一个目标并复盘归档，开始复利 🧠<br><br><span style="font-size:12px;color:var(--sub)">👆 点击「即时复盘」用文字或语音记录</span></div>';return Array.from(box.children);}
+  if(!S.mem.length){box.innerHTML='<div class="empty">记忆库还是空的<br>完成一个目标并复盘归档，开始复利 🧠</div>';return Array.from(box.children);}
 
   // 技能标签云
   let tagsHtml='';
@@ -826,63 +790,6 @@ function exportData(){
   a.download='eros-backup-'+new Date().toISOString().slice(0,10)+'.json';a.click();
   toast('📤 数据已导出');
 }
-/* ============ 即时捕捉 ============ */
-function capSave(){
-  const note=document.getElementById('capNote').value.trim();
-  if(!note)return toast('写点什么再沉淀');
-  const cap=document.getElementById('quickCap');
-  // 保存时脉冲强化
-  if(G_OK&&!RM){
-    cap.classList.add('pulse');
-    setTimeout(()=>cap.classList.remove('pulse'),600);
-  }
-  S.mem.unshift({goal:'即时复盘',date:new Date().toLocaleString('zh-CN'),
-    tasks:0,note:note,thought:''});
-  S.exp+=10;
-  trackToday();
-  document.getElementById('capNote').value='';
-  save();render();playEnter('p-mem');
-  toast('📦 已沉淀 +10 修为');
-  burst(cap.getBoundingClientRect().left+cap.offsetWidth/2,cap.getBoundingClientRect().top+30,20);
-}
-
-/* ============ 语音输入（Web Speech API · Chrome/Edge 原生支持） ============ */
-let recog=null;let isRec=false;
-function toggleVoice(){
-  if(isRec){stopVoice();return;}
-  const SpeechRecognition=window.SpeechRecognition||window.webkitSpeechRecognition;
-  if(!SpeechRecognition){toast('⚠️ 当前浏览器不支持语音输入，请用 Chrome 或 Edge');return;}
-  if(!recog){
-    recog=new SpeechRecognition();
-    recog.lang='zh-CN';recog.interimResults=true;recog.continuous=true;
-    recog.onresult=e=>{
-      let txt='';
-      for(let i=0;i<e.results.length;i++)txt+=e.results[i][0].transcript;
-      document.getElementById('capNote').value=txt;
-      document.getElementById('capNote').focus();
-    };
-    recog.onerror=e=>{if(e.error!=='no-speech')toast('语音识别出错: '+e.error);stopVoice();};
-    recog.onend=()=>{if(isRec)recog.start();};
-  }
-  startVoice();
-}
-function startVoice(){
-  isRec=true;
-  const btn=document.getElementById('voiceBtn');
-  btn.classList.add('recording');
-  document.getElementById('voiceLabel').textContent='停止录音';
-  document.getElementById('voiceHint').textContent='🎙 正在聆听...';
-  try{recog.start();}catch(e){}
-}
-function stopVoice(){
-  isRec=false;
-  const btn=document.getElementById('voiceBtn');
-  btn.classList.remove('recording');
-  document.getElementById('voiceLabel').textContent='语音输入';
-  document.getElementById('voiceHint').textContent='';
-  try{recog.stop();}catch(e){}
-}
-
 /* ============ 粒子 ============ */
 const cvs=document.getElementById('fx'),ctx=cvs.getContext('2d');let parts=[];
 function resize(){cvs.width=innerWidth;cvs.height=innerHeight;}
@@ -906,7 +813,7 @@ function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;',
 function renderHeader(){const j=job();
   document.getElementById('hLv').textContent=level();
   document.getElementById('hJob').textContent=j[1];}
-function render(){renderHeader();renderEnergyBar();renderToday();renderContrib();renderStats();renderMem();}
+function render(){renderHeader();renderEnergyBar();renderToday();renderContrib();renderMem();}
 
 /* ============================================================
    GSAP 入场动效
