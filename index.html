@@ -378,17 +378,6 @@ function renderEnergyBar(){
     '<div style="height:5px;background:rgba(0,0,0,.1);border-radius:2px;margin-top:8px">'+
     '<div style="height:100%;width:'+pct+'%;background:'+lv.color+';border-radius:2px;transition:width .5s"></div></div></div>';
 }
-
-function getTaskWeight(minutes){return minutes<=10?1:minutes<=20?2:minutes<=30?3:4;}
-function sortTasksByEnergy(){
-  if(!S.tasks.length)return;
-  const lv=energyLevel(S.energy||50);
-  if(lv.strategy==='hardFirst')S.tasks.sort((a,b)=>getTaskWeight(b.minutes)-getTaskWeight(a.minutes));
-  else if(lv.strategy==='easyFirst'||lv.strategy==='minimal')S.tasks.sort((a,b)=>getTaskWeight(a.minutes)-getTaskWeight(b.minutes));
-  // coreFirst: keep original order (template order is good)
-  // normal: keep original order
-  save();renderToday();
-}
 /* ============ 精力系统结束 ============ */
 
 /* ============ 导航 ============ */
@@ -533,7 +522,7 @@ function splitGoal(){
   S.template=tplKey;S.goal=goal;S.tasks=[];let id=0;
   for(const st of tpl.stages)for(const t of st.tasks)
     S.tasks.push({id:++id,stage:st.name,title:t.title.replace('{goal}',goal.slice(0,16)),verify:t.verify||'',minutes:t.minutes||15,done:false});
-  save();sortTasksByEnergy();render();go(document.querySelectorAll('nav button')[1]);
+  save();render();go(document.querySelectorAll('nav button')[1]);
   toast('✅ 已拆解为 '+S.tasks.length+' 个最小行动');
 }
 /* ============ 今日 ============ */
