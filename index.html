@@ -696,11 +696,10 @@ function renderContrib(){
     cell.addEventListener('mouseenter',()=>{
       const rect=cell.getBoundingClientRect();
       const wrapRect=wrap.getBoundingClientRect();
-      let left=rect.left-wrapRect.left+12;
+      let left=rect.right+8;
       let top=rect.top-wrapRect.top-8;
-      // 防止溢出
-      if(left+220>wrapRect.width)left=wrapRect.width-230;
-      if(top+80>wrapRect.height)top=rect.top-wrapRect.top-100;
+      if(left+230>window.innerWidth)left=rect.left-240;
+      if(top+80>wrapRect.bottom)top=rect.top-wrapRect.top-100;
 
       inner.innerHTML=mems.map(m=>{
         const preview=m.note&&m.note!=='（未写复盘）'?m.note.slice(0,60):(m.thought?m.thought.slice(0,60):'');
